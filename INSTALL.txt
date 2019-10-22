@@ -1,0 +1,9 @@
+# MIN_CONVEX_DECOMP
+
+This software uses cmake as build system. In order to build it you may
+want to run the following commands:
+
+     cmake -D CMAKE_BUILD_TYPE=Release .
+     make
+     (make install)
+
