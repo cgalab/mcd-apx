@@ -66,6 +66,9 @@ void ReadInput(FILE *input, pnt *pnts, int *num_pnts)
 
    *num_pnts = i;
 
+   for(int j = 0; j<i ; ++j ) {
+	   printf("%d %d %lf %lf\n",j,pnts[j].id,pnts[j].x,pnts[j].y);
+   }
 
   return;
 }
@@ -205,7 +208,7 @@ void WriteObjVertices(FILE *output, pnt *pnts, int num_pnts)
    int i;
 
    for (i = 0; i < num_pnts;  ++i) {
-      fprintf(output, "v %d %d 0\n", (int) pnts[i].x, (int) pnts[i].y);
+      fprintf(output, "v %lf %lf 0.0\n", pnts[i].x, pnts[i].y);
    }
 
    return;

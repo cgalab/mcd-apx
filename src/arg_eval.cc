@@ -41,6 +41,7 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
    rt_opt->timeout = 0;
    rt_opt->verbose = false;
    rt_opt->index = false;
+   rt_opt->partition = 1;
 
    /*                                                                        */
    /* parse the command-line arguments                                       */
@@ -71,6 +72,11 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
          ++count;
          if ((success = (count < argc)))
             rt_opt->timeout = atoi(argv[count]);
+      }
+      else if (strcmp(argv[count],"--partition") == 0) {
+         ++count;
+         if ((success = (count < argc)))
+            rt_opt->partition = atoi(argv[count]);
       }
       else if (strcmp(argv[count],"--verbose") == 0) {
          rt_opt->verbose = true;

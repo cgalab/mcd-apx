@@ -41,6 +41,7 @@ typedef struct {
    boolean randomized;
    boolean onion;
    boolean obj;
+   int partition;
 } rt_options;
 
 
