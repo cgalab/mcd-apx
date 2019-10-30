@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
          }
       }
 
+      data.cfg = &rt_opt;
 
       /*                                                                     */
       /* read input pnts                                                     */
@@ -108,15 +109,17 @@ int main(int argc, char *argv[])
     	  /************************************************************/
     	  /*			      PARTITION APPROACH                      */
     	  /************************************************************/
+
     	  /* split into 'rt_opt.partition' point sets */
     	  data.partition(rt_opt.partition);
 
+    	  /* compute onions of each set */
     	  for(auto s : data.sets) {
     		  StartComputation(&s,rt_opt,output);
     	  }
 
-    	  /* merge in between */
-    	  printf("Merge TODO!\n");
+    	  /* merge between sets */
+    	  data.merge();
 
       } else {
     	  /************************************************************/

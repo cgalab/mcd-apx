@@ -17,6 +17,12 @@ void Broker::partition(int num_sets) {
 	}
 }
 
+void Broker::merge() {
+	for(auto s : sets) {
+		s.printLayer(0);
+	}
+}
+
 void Broker::printSets() const {
 	for(auto s : sets) {
 		s.printPnts();
@@ -35,3 +41,21 @@ void Data::printPnts() const {
 			<< " y: " << pnts[i].y << std::endl;
 	}
 }
+
+void Data::printLayer(const int idx) const {
+	std::cout << "idx: " << idx << " num_layers: " << num_layers;
+	assert(idx < num_layers);
+	auto l = layers[idx];
+	auto startNode = nodes[l.nde];
+	node *nIt = &startNode;
+	std::cout << "print layer " << idx << ", size: " << l.num << std::endl;
+	int cnt = 0;
+	do {
+		auto p = pnts[nIt->vtx];
+		std::cout << "idx: " << cnt++ << ", id: " << p.id  << " x: " << p.x << " y: " << p.y << std::endl;
+		nIt = &nodes[nIt->next];
+	} while(nIt != &startNode);
+}
+
+
+
