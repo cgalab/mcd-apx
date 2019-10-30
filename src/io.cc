@@ -66,6 +66,7 @@ void ReadInput(FILE *input, pnt *pnts, int *num_pnts)
 
    *num_pnts = i;
 
+
   return;
 }
 
