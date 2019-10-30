@@ -19,6 +19,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <math.h>
+
 /*                                                                           */
 /* get my header files                                                       */
 /*                                                                           */
@@ -239,7 +241,11 @@ void WriteObjVertices(FILE *output, pnt *pnts, int num_pnts)
    int i;
 
    for (i = 0; i < num_pnts;  ++i) {
-      fprintf(output, "v %lf %lf 0\n", pnts[i].x, pnts[i].y);
+	   if(floor(pnts[i].x) == pnts[i].x && floor(pnts[i].y) == pnts[i].y) {
+		   fprintf(output, "v %d %d 0\n", (int) pnts[i].x, (int) pnts[i].y);
+	   } else {
+		   fprintf(output, "v %lf %lf 0\n", pnts[i].x, pnts[i].y);
+	   }
    }
 
    return;
