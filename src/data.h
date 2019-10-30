@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <list>
+#include <vector>
 
 #include "defs.h"
 
@@ -48,11 +49,16 @@ public:
 	int lower_bound = 0;
 
 	void printPnts() const;
-	void printLayer(int idx) const;
+	void printLayer() const;
+
+	void backupOnionZoro(int idx = 0);
 
 	pnt  *pnts;
 	loop *layers;
 	node *nodes;
+
+private:
+	std::vector<node> onionZero;
 };
 
 

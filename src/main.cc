@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     	  data.partition(rt_opt.partition);
 
     	  /* compute onions of each set */
+
     	  for(auto s : data.sets) {
     		  StartComputation(&s,rt_opt,output);
     	  }
@@ -213,6 +214,10 @@ void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
 		/*                                                                  */
 		data->lower_bound = DetermineLowerBound(data->pnts, data->num_pnts, data->layers, data->num_layers,
 				data->nodes);
+
+		if(rt_opt.partition > 1) {
+			data->backupOnionZoro();
+		}
 
 		/*                                                                  */
 		/* compute approximate minimum decomposition (based on onions)      */

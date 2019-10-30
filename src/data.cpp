@@ -18,8 +18,9 @@ void Broker::partition(int num_sets) {
 }
 
 void Broker::merge() {
+	std::cout << "merge: " << std::endl;
 	for(auto s : sets) {
-		s.printLayer(0);
+		s.printLayer();
 	}
 }
 
@@ -27,6 +28,19 @@ void Broker::printSets() const {
 	for(auto s : sets) {
 		s.printPnts();
 	}
+}
+
+
+void Data::backupOnionZoro(int idx) {
+	auto l = layers[idx];
+	node startNode = nodes[l.nde];
+	node nIt = startNode;
+	int cnt = 0;
+	do {
+		std::cout << "." << nIt.vtx << " ";
+		onionZero.push_back(nIt);
+		nIt = nodes[nIt.next];
+	} while(nIt.vtx != startNode.vtx);
 }
 
 void Data::printPnts() const {
@@ -42,19 +56,11 @@ void Data::printPnts() const {
 	}
 }
 
-void Data::printLayer(const int idx) const {
-	std::cout << "idx: " << idx << " num_layers: " << num_layers;
-	assert(idx < num_layers);
-	auto l = layers[idx];
-	auto startNode = nodes[l.nde];
-	node *nIt = &startNode;
-	std::cout << "print layer " << idx << ", size: " << l.num << std::endl;
-	int cnt = 0;
-	do {
-		auto p = pnts[nIt->vtx];
-		std::cout << "idx: " << cnt++ << ", id: " << p.id  << " x: " << p.x << " y: " << p.y << std::endl;
-		nIt = &nodes[nIt->next];
-	} while(nIt != &startNode);
+void Data::printLayer() const {
+	std::cout << "size of onion: " << onionZero.size() << std::endl;
+	for(auto n : onionZero) {
+		std::cout << "id: " << n.vtx  << std::endl;
+	}
 }
 
 
