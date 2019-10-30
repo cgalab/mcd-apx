@@ -6,12 +6,6 @@ set( min_convex_decomp_SRC
 	io.cc arg_eval.cc onion.cc decomp.cc data.cpp
 )
 
-include(CheckIncludeFile)
-check_include_file(stdbool.h HAVE_STDBOOL_H)
-if( HAVE_STDBOOL_H )
-   add_definitions(-DHAVE_BOOL)
-endif()
-
 include(CheckFunctionExists) 
 check_function_exists(random HAVE_RANDOM)
 
