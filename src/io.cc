@@ -55,14 +55,15 @@ void ReadInput(FILE *input, pnt *pnts, int *num_pnts) {
 
 	while ((read = getline(&line, &len, input)) != -1) {
 		if(read > 0) {
-			if(line[0] == '#') /* comment */ {continue;}
+			if(line[0] == '#' || line[0] == '\n') /* comment, NL */ {continue;}
 			else {
-				if (EOF == sscanf(line, "%d %lf %lf\n", &pnts[cnt].id, &pnts[cnt].x, &pnts[cnt].y)) {
-					if (EOF == sscanf(line, "%lf %lf\n", &pnts[cnt].x, &pnts[cnt].y)) {
-						throw EOF_ENCOUNTERED;
-					} else {
-						pnts[cnt].id = cnt;
-					}
+				double id = NIL;
+				if (2 == sscanf(line, "%lf %lf %lf\n", &id, &pnts[cnt].x, &pnts[cnt].y)) {
+					pnts[cnt].y = pnts[cnt].x;
+					pnts[cnt].x = id;
+					pnts[cnt].id = cnt;
+				} else {
+					pnts[cnt].id = (int)id;
 				}
 				pnts[cnt].in = true;
 				++cnt;
