@@ -66,10 +66,6 @@ void ReadInput(FILE *input, pnt *pnts, int *num_pnts)
 
    *num_pnts = i;
 
-   for(int j = 0; j<i ; ++j ) {
-	   printf("%d %d %lf %lf\n",j,pnts[j].id,pnts[j].x,pnts[j].y);
-   }
-
   return;
 }
 
@@ -175,7 +171,7 @@ void WriteLayers(FILE *output, pnt *pnts, loop *layers, int num_layers,
 
 
 
-void WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex, 
+void WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex,
                       int *num_convex, boolean obj)
 {
    int i;

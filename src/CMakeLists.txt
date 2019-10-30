@@ -21,7 +21,7 @@ if( NOT HAVE_RANDOM )
 endif( NOT HAVE_RANDOM )
 
 add_executable(mcd_apx main.cc ${min_convex_decomp_SRC}) 
-	target_link_libraries(min_convex_decomp ${min_convex_decomp_LIBS})
+target_link_libraries(mcd_apx ${min_convex_decomp_LIBS})
 
 
 get_directory_property( DirDefs COMPILE_DEFINITIONS ) 

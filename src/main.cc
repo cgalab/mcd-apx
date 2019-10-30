@@ -27,6 +27,7 @@
 #include <string.h>
 #include <unistd.h>
 
+
 /*                                                                           */
 /* get my header files                                                       */
 /*                                                                           */
@@ -38,16 +39,10 @@ int p_comp(const void *, const void *);
 
 int main(int argc, char *argv[])
 {
+   Data data;
    rt_options rt_opt;
-   FILE *input, *output;
-   pnt *pnts = (pnt*) malloc(MAX * sizeof(pnt));
-   loop *layers = (loop*) malloc(MAX * sizeof(loop));
-   node *nodes = (node*) malloc(MAX * sizeof(node));
-   int num_pnts = 0;
-   int num_layers = 0;
-   int num_nodes  = 0;
    int err = 0;
-   int lower_bound;
+   FILE *input = nullptr, *output = nullptr;
 
    try {
       /*                                                                     */
@@ -82,78 +77,62 @@ int main(int argc, char *argv[])
             srand48(rseed);
          }
       }
-         
+
+
       /*                                                                     */
       /* read input pnts                                                     */
       /*                                                                     */
       input = OpenFile(rt_opt.input_file, "r");
-      ReadInput(input, pnts, &num_pnts);
+      ReadInput(input, data.pnts, &data.num_pnts);
       fclose(input);
 
       if (rt_opt.obj) {
          /*                                                                  */
          /* write points for OBJ output                                      */
          /*                                                                  */
-         output = OpenFile(rt_opt.output_file, "w");
-         WriteObjVertices(output, pnts, num_pnts);
+    	 output = OpenFile(rt_opt.output_file, "w");
+         WriteObjVertices(output, data.pnts, data.num_pnts);
       }
 
       /*                                                                     */
       /* sort points in lexicographical order (first x, second y)            */
       /*                                                                     */
-      qsort(pnts, num_pnts, sizeof(pnt), p_comp);
+      qsort(data.pnts, data.num_pnts, sizeof(pnt), p_comp);
 
-      /*
-      for (i = 0;  i < num_pnts;  ++i) {
-         printf("%d: %f %f\n", pnts[i].id, pnts[i].x, pnts[i].y);
+      if (!rt_opt.obj) {output = OpenFile(rt_opt.output_file, "w");}
+
+
+      if(rt_opt.partition > 1) {
+    	  /* split into 'rt_opt.partition' point sets */
+    	  std::list<Data> sets(rt_opt.partition);
+    	  getPntSets(data,rt_opt.partition,sets);
+    	  printf("testing (3)..\n");
+
+    	  for(auto s : sets) {
+    		  printf("%i\n",s.num_pnts);
+    	  }
+
+    	  /* apply the onion approach to each set */
+//    	  for(int i = 0; i< rt_opt.partition; ++i) {
+//    		  printf("run %i\n",i);
+//    		  StartComputation(&sets[i],rt_opt,output);
+//    	  }
+    	  for(auto s : sets) {
+    		  printf("run \n");
+    		  StartComputation(&s,rt_opt,output);
+    	  }
+
+    	  /* merge in between */
+    	  printf("Merge TODO!\n");
+
+      } else {
+    	  StartComputation(&data,rt_opt,output);
       }
-      */
+      fclose(output);
 
-      if (rt_opt.onion) {
-         /*                                                                  */
-         /* compute onion layers                                             */
-         /*                                                                  */
-         OnionLayers(pnts, num_pnts, layers, &num_layers, nodes, &num_nodes);
-
-         /*                                                                  */
-         /* output layers                                                    */
-         /*                                                                  */
-         /*
-         output = OpenFile(rt_opt.output_file, "w");
-         WriteLayers(output, pnts, layers, num_layers, nodes);
-         fclose(output);
-         exit(1);
-         */
-
-         /*                                                                  */
-         /* compute lower bound                                              */
-         /*                                                                  */
-         lower_bound = DetermineLowerBound(pnts, num_pnts, layers, num_layers, 
-                                           nodes);
-
-         /*                                                                  */
-         /* compute approximate minimum decomposition (based on onions)      */
-         /*                                                                  */
-         if (!rt_opt.obj) 
-            output = OpenFile(rt_opt.output_file, "w");
-         ComputeApproxDecompOnion(output, pnts, num_pnts, layers, num_layers,
-                                  nodes, lower_bound, rt_opt.obj);
-         fclose(output);
-         
-      }
-      else {
-         /*                                                                  */
-         /* compute approximate minimum decomposition (Knauer&Spillner)      */
-         /*                                                                  */
-         if (!rt_opt.obj) 
-            output = OpenFile(rt_opt.output_file, "w");
-         ComputeApproxDecomp(output, pnts, num_pnts, layers, nodes,
-                             rt_opt.randomized, rt_opt.obj);
-         fclose(output);
-      }
    }
    catch (errordef PolyAreaErrorCode) {
-      err = 1;
+	  err = 1;
       switch (PolyAreaErrorCode) {
       case SUCCESS: 
          break;
@@ -208,11 +187,66 @@ int main(int argc, char *argv[])
       }
    }
 
-   free(pnts);
-   free(nodes);
-   free(layers);
-
    exit(err);
+}
+
+void getPntSets(Data &data, int num_sets, std::list<Data> &sets) {
+	int pnts_per_set = data.num_pnts/num_sets + 1;
+
+	/* out of pure laziness we start by only partition the x-values */
+	for(int i = 0; i < num_sets; ++i) {
+		auto set = new Data(num_sets);
+		for(int j = 0; j < pnts_per_set && (i*pnts_per_set + j) < data.num_pnts; ++j) {
+			set->pnts[j] = data.pnts[i*pnts_per_set + j];
+			set->num_pnts = j;
+		}
+		++set->num_pnts;
+		sets.push_back(*set);
+	}
+}
+
+void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
+	/* test print data->points*/
+	if (rt_opt.onion) {
+		/*                                                                  */
+		/* compute onion layers                                             */
+		/*                                                                  */
+		OnionLayers(data->pnts, data->num_pnts, data->layers, &data->num_layers, data->nodes, &data->num_nodes);
+
+		printf("done onions\n"); fflush(stdout);
+
+		/*                                                                  */
+		/* output layers                                                    */
+		/*                                                                  */
+		/*
+	         output = OpenFile(rt_opt.output_file, "w");
+	         WriteLayers(output, pnts, layers, num_layers, nodes);
+	         fclose(output);
+	         exit(1);
+		 */
+
+		/*                                                                  */
+		/* compute lower bound                                              */
+		/*                                                                  */
+		data->lower_bound = DetermineLowerBound(data->pnts, data->num_pnts, data->layers, data->num_layers,
+				data->nodes);
+
+		printf("done lower bound\n"); fflush(stdout);
+		/*                                                                  */
+		/* compute approximate minimum decomposition (based on onions)      */
+		/*                                                                  */
+		ComputeApproxDecompOnion(output, data->pnts, data->num_pnts, data->layers, data->num_layers,
+				data->nodes, data->lower_bound, rt_opt.obj);
+		printf("done ComputeApproxDecompOnion\n");
+	} else {
+		/*                                                                  */
+		/* compute approximate minimum decomposition (Knauer&Spillner)      */
+		/*                                                                  */
+		ComputeApproxDecomp(output, data->pnts, data->num_pnts, data->layers, data->nodes,
+				rt_opt.randomized, rt_opt.obj);
+		printf("done CComputeApproxDecomp\n");
+	}
+	printf("ok ok");
 }
 
 

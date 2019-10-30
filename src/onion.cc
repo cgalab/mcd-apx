@@ -182,6 +182,7 @@ void FreeHulls(void)
 void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers, 
                  node *nodes, int *num_nodes)
 {
+	printf("go on");
    pnt *vtx = (pnt*) malloc(MAX * sizeof(pnt));
    int *ch_vtx = (int*) malloc(MAX * sizeof(int));
    int i, num_vtx, num_ch_vtx;
@@ -205,9 +206,11 @@ void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers,
       vtx[i].y  = pnts[i].y;
       vtx[i].id = i;
       vtx[i].in = true;
+      printf("%i ",i);
    }
 
    do {
+	   printf(".");
       /*                                                                     */
       /* compute convex hull of current point set                            */
       /*                                                                     */
@@ -231,6 +234,7 @@ void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers,
 
    } while (inner_pnts_left);
    
+   printf("free stuff");
    free(vtx);
    free(ch_vtx);
    FreeHulls();

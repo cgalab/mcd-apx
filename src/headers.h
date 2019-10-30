@@ -27,6 +27,10 @@ void WriteOutputIndex(FILE *output, node *pnt, int num_pnt);
 
 void *ReallocateArray(void *old_ptr, int number, size_t size);
 
+void StartComputation(Data *data, rt_options &rt_opt, FILE *output);
+
+void getPntSets(Data &data, int num_sets, std::list<Data> &sets);
+
 void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers, 
                  node *nodes, int *num_nodes);
 
@@ -92,7 +96,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
 void AddToConvexChain(int *convex, int *num_convex, node *nodes, int start,
                       int end, boolean ccw);
 
-void WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex, 
+void WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex,
                       int *num_convex, boolean obj);
 
 void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes, 

@@ -847,6 +847,7 @@ void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
          HandleOnionAnnulus(output, pnts, layers, nodes, &num_cvx_areas, L0, 
                             convex, obj);
       }
+      printf("a ");
    }
    /*
    for (L0 = num_layers - 0;  L0 < num_layers;  ++L0) {    
@@ -856,14 +857,15 @@ void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
    */
 
    WriteOneLayer(output, pnts, layers, id, nodes, obj);
+   printf("b ");
    ++num_cvx_areas;
-      
+
    printf("lower bound:   %d\n", lower_bound);
    printf("num_cvx_areas: %d\n", num_cvx_areas);
    printf("apx ratio:     %5.3f\n", ((double) num_cvx_areas) /
           ((double) lower_bound));
 
    free(convex);
-
+   printf("c ");
    return;
 }
