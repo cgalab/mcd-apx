@@ -115,8 +115,15 @@ int main(int argc, char *argv[])
 
     	  /* compute onions of each set */
 
-    	  for(auto s : data.sets) {
+//    	  std::for_each(data.sets.begin(),data.sets.end(),
+//    		        [](Data * d) {
+//    		  	  	  	  StartComputation(d,rt_opt,output);
+//    		       	}
+//    	  );
+
+    	  for(auto& s : data.sets) {
     		  StartComputation(&s,rt_opt,output);
+    		  s.printLayer();
     	  }
 
     	  /* merge between sets */

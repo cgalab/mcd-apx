@@ -37,7 +37,7 @@ void Data::backupOnionZoro(int idx) {
 	node nIt = startNode;
 	int cnt = 0;
 	do {
-		std::cout << "." << nIt.vtx << " ";
+		std::cout << nIt.vtx << " ";
 		onionZero.push_back(nIt);
 		nIt = nodes[nIt.next];
 	} while(nIt.vtx != startNode.vtx);
