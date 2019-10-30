@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project (min_convex_decomp)
 
 set( min_convex_decomp_SRC
-	io.cc arg_eval.cc onion.cc decomp.cc
+	io.cc arg_eval.cc onion.cc decomp.cc data.cpp
 )
 
 include(CheckIncludeFile)

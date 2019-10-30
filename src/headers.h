@@ -15,6 +15,9 @@
 #ifndef MIN_CONVEX_DECOMP_HEADERS_H
 #define MIN_CONVEX_DECOMP_HEADERS_H
 
+#include <list>
+#include "data.h"
+
 void ArgEval(int argc, char *argv[], rt_options *rt_opt);
 
 FILE *OpenFile(const char *file_name, const char *access);
@@ -25,13 +28,9 @@ void WriteOutputCoord(FILE *output, node *pnt, int num_pnt);
 
 void WriteOutputIndex(FILE *output, node *pnt, int num_pnt);
 
-void *ReallocateArray(void *old_ptr, int number, size_t size);
-
 void StartComputation(Data *data, rt_options &rt_opt, FILE *output);
 
-void getPntSets(Data &data, int num_sets, std::list<Data> &sets);
-
-void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers, 
+void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers,
                  node *nodes, int *num_nodes);
 
 void ConvexHull(pnt *vtx, int num_vtx, int *ch_vtx, int *num_ch_vtx);
