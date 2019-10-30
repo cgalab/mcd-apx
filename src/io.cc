@@ -36,38 +36,71 @@ FILE *OpenFile(const char *file_name, const char *access)
 }
 
 
-void ReadInput(FILE *input, pnt *pnts, int *num_pnts)
-{
-   int i = 0;
-   
-   if (EOF == fscanf(input, "%*[^\n]\n")) throw EOF_ENCOUNTERED;
-   if (EOF == fscanf(input, "%*[^\n]\n")) throw EOF_ENCOUNTERED;
-   
-   if (EOF == fscanf(input, "%d %lf %lf", 
-                     &(pnts[0].id), &(pnts[0].x), &(pnts[0].y)))
-      throw EOF_ENCOUNTERED;
 
-   if (EOF == fscanf(input, "%d %lf %lf", 
-                     &(pnts[1].id), &(pnts[1].x), &(pnts[1].y)))
-      throw EOF_ENCOUNTERED;
+/*
+ * INPUT FOMRAT:
+ * # as comments any line starting with a # is ignored
+ * vertices are given as vertexidx x-coordinate y-coordinate
+ * -- extension: if only two values are given then x/y coordinates
+ *    are assumed and the index is simple counted line by line
+ * */
+void ReadInput(FILE *input, pnt *pnts, int *num_pnts) {
+	char * line = NULL;
+	size_t len = 0;
+	ssize_t read;
 
-   if (EOF == fscanf(input, "%d %lf %lf", 
-                     &(pnts[2].id), &(pnts[2].x), &(pnts[2].y)))
-      throw EOF_ENCOUNTERED;
+	int cnt = 0;
 
-   pnts[0].in = pnts[1].in = pnts[2].in = true;
+	if (input == NULL) {throw EOF_ENCOUNTERED;}
 
-   i = 3;
-   while (EOF != fscanf(input, "%d %lf %lf", 
-                        &(pnts[i].id), &(pnts[i].x), &(pnts[i].y))) {
-      pnts[i].in = true;
-      ++i;
-   }
+	while ((read = getline(&line, &len, input)) != -1) {
+		if(read > 0) {
+			if(line[0] == '#') /* comment */ {continue;}
+			else {
+				if (EOF == sscanf(line, "%d %lf %lf\n", &pnts[cnt].id, &pnts[cnt].x, &pnts[cnt].y)) {
+					if (EOF == sscanf(line, "%lf %lf\n", &pnts[cnt].x, &pnts[cnt].y)) {
+						throw EOF_ENCOUNTERED;
+					} else {
+						pnts[cnt].id = cnt;
+					}
+				}
+				pnts[cnt].in = true;
+				++cnt;
+			}
+		}
+	}
 
-   *num_pnts = i;
+	*num_pnts = cnt;
 
+//   int i = 0;
+//
+//   if (EOF == fscanf(input, "%*[^\n]\n")) throw EOF_ENCOUNTERED;
+//   if (EOF == fscanf(input, "%*[^\n]\n")) throw EOF_ENCOUNTERED;
+//
+//   if (EOF == fscanf(input, "%d %lf %lf",
+//                     &(pnts[0].id), &(pnts[0].x), &(pnts[0].y)))
+//      throw EOF_ENCOUNTERED;
+//
+//   if (EOF == fscanf(input, "%d %lf %lf",
+//                     &(pnts[1].id), &(pnts[1].x), &(pnts[1].y)))
+//      throw EOF_ENCOUNTERED;
+//
+//   if (EOF == fscanf(input, "%d %lf %lf",
+//                     &(pnts[2].id), &(pnts[2].x), &(pnts[2].y)))
+//      throw EOF_ENCOUNTERED;
+//
+//   pnts[0].in = pnts[1].in = pnts[2].in = true;
+//
+//   i = 3;
+//   while (EOF != fscanf(input, "%d %lf %lf",
+//                        &(pnts[i].id), &(pnts[i].x), &(pnts[i].y))) {
+//      pnts[i].in = true;
+//      ++i;
+//   }
+//
+//   *num_pnts = i;
 
-  return;
+	return;
 }
 
 
@@ -205,7 +238,7 @@ void WriteObjVertices(FILE *output, pnt *pnts, int num_pnts)
    int i;
 
    for (i = 0; i < num_pnts;  ++i) {
-      fprintf(output, "v %d %d 0\n", (int) pnts[i].x, (int) pnts[i].y);
+      fprintf(output, "v %lf %lf 0\n", pnts[i].x, pnts[i].y);
    }
 
    return;
