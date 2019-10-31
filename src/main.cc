@@ -56,28 +56,8 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* prepare for randomized cutting of convex areas                   */
          /*                                                                  */
-         if (rt_opt.seed != NIL)  srand48(rt_opt.seed);
-         else {
-            long rseed;
-            int need = sizeof(rseed);
-#define RND_SOURCE "/dev/urandom"
-            int fd = open(RND_SOURCE, O_RDONLY);
-            if (fd < 0) {
-               fprintf(stderr, "Cannot open " RND_SOURCE ": %s\n", strerror(errno));
-               exit(1);
-            }
-            int cnt = read(fd, &rseed, need);
-            if (cnt <= 0) {
-               fprintf(stderr, "Error reading from " RND_SOURCE ": %s\n", strerror(errno));
-               exit(1);
-            }
-            if (cnt != need) {
-               fprintf(stderr, "Warning: short read from /dev/urandom, randomness not seeded well.\n");
-            }
-            close(fd);
-            /* fprintf(stderr, "Seeding with %lx\n", rseed); */
-            srand48(rseed);
-         }
+         if (rt_opt.seed != NIL) { srand48(rt_opt.seed); }
+         else { initRand(); }
       }
 
       data.cfg = &rt_opt;
@@ -114,20 +94,15 @@ int main(int argc, char *argv[])
     	  data.partition(rt_opt.partition);
 
     	  /* compute onions of each set */
-
-//    	  std::for_each(data.sets.begin(),data.sets.end(),
-//    		        [](Data * d) {
-//    		  	  	  	  StartComputation(d,rt_opt,output);
-//    		       	}
-//    	  );
-
     	  for(auto& s : data.sets) {
     		  StartComputation(&s,rt_opt,output);
-    		  s.printLayer();
     	  }
 
     	  /* merge between sets */
     	  data.merge();
+
+    	  /* write additional faces from merge*/
+    	  data.writeFacesToFile(output);
 
       } else {
     	  /************************************************************/
@@ -230,13 +205,13 @@ void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
 		/* compute approximate minimum decomposition (based on onions)      */
 		/*                                                                  */
 		ComputeApproxDecompOnion(output, data->pnts, data->num_pnts, data->layers, data->num_layers,
-				data->nodes, data->lower_bound, rt_opt.obj);
+				data->nodes, data->lower_bound, rt_opt.obj, rt_opt);
 	} else {
 		/*                                                                  */
 		/* compute approximate minimum decomposition (Knauer&Spillner)      */
 		/*                                                                  */
 		ComputeApproxDecomp(output, data->pnts, data->num_pnts, data->layers, data->nodes,
-				rt_opt.randomized, rt_opt.obj);
+				rt_opt.randomized, rt_opt.obj, rt_opt);
 	}
 }
 
@@ -252,3 +227,24 @@ int p_comp(const void *a, const void *b)
    }
 }
 
+void initRand() {
+	long rseed;
+	int need = sizeof(rseed);
+#define RND_SOURCE "/dev/urandom"
+	int fd = open(RND_SOURCE, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "Cannot open " RND_SOURCE ": %s\n", strerror(errno));
+		exit(1);
+	}
+	int cnt = read(fd, &rseed, need);
+	if (cnt <= 0) {
+		fprintf(stderr, "Error reading from " RND_SOURCE ": %s\n", strerror(errno));
+		exit(1);
+	}
+	if (cnt != need) {
+		fprintf(stderr, "Warning: short read from /dev/urandom, randomness not seeded well.\n");
+	}
+	close(fd);
+	/* fprintf(stderr, "Seeding with %lx\n", rseed); */
+	srand48(rseed);
+}

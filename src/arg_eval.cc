@@ -43,6 +43,7 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
    rt_opt->index = false;
    rt_opt->partition = 1;
    rt_opt->randomized = false;
+   rt_opt->onion = false;
 
    /*                                                                        */
    /* parse the command-line arguments                                       */

@@ -22,6 +22,8 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt);
 
 FILE *OpenFile(const char *file_name, const char *access);
 
+void initRand();
+
 void ReadInput(FILE *file, pnt *pnts, int *num_pnt);
 
 void WriteOutputCoord(FILE *output, node *pnt, int num_pnt);
@@ -52,11 +54,12 @@ void GetVerticesInHalfplane(int i1, int i2, int *o3, int *o4, node *nodes,
 
 void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
                          loop *layers, node *nodes,
-                         boolean randomized, boolean obj);
+                         boolean randomized, boolean obj,
+						 rt_options &rt_opt);
 
 void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
                               loop *layers, int num_layers, node *nodes,
-                              int lower_bound, boolean obj);
+                              int lower_bound, boolean obj, rt_options &rt_opt);
 
 void StoreAsOnionLayer(int *ch_vtx, int num_ch_vtx, 
                        loop *layers, int layer_id, 

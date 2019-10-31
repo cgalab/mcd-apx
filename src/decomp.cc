@@ -486,7 +486,8 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
 
 void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
                          loop *layers, node *nodes,
-                         boolean randomized, boolean obj)
+                         boolean randomized, boolean obj,
+						 rt_options &rt_opt)
 {
    pnt *vtx = (pnt*) malloc(MAX * sizeof(pnt));
    int *ch_vtx = (int*) malloc(MAX * sizeof(int));
@@ -819,7 +820,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
 
 void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
                               loop *layers, int num_layers, node *nodes,
-                              int lower_bound, boolean obj)
+                              int lower_bound, boolean obj, rt_options &rt_opt)
 {
    int L0, L1, id;
    int num_cvx_areas = 0;
@@ -857,11 +858,12 @@ void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
    WriteOneLayer(output, pnts, layers, id, nodes, obj);
    ++num_cvx_areas;
 
-   printf("lower bound:   %d\n", lower_bound);
-   printf("num_cvx_areas: %d\n", num_cvx_areas);
-   printf("apx ratio:     %5.3f\n", ((double) num_cvx_areas) /
-          ((double) lower_bound));
-
+   if(rt_opt.verbose) {
+	   printf("lower bound:   %d\n", lower_bound);
+	   printf("num_cvx_areas: %d\n", num_cvx_areas);
+	   printf("apx ratio:     %5.3f\n", ((double) num_cvx_areas) /
+			   ((double) lower_bound));
+   }
    free(convex);
    return;
 }
