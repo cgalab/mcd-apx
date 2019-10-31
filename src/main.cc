@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
          }
       }
 
+      data.cfg = &rt_opt;
 
       /*                                                                     */
       /* read input pnts                                                     */
@@ -108,15 +109,25 @@ int main(int argc, char *argv[])
     	  /************************************************************/
     	  /*			      PARTITION APPROACH                      */
     	  /************************************************************/
+
     	  /* split into 'rt_opt.partition' point sets */
     	  data.partition(rt_opt.partition);
 
-    	  for(auto s : data.sets) {
+    	  /* compute onions of each set */
+
+//    	  std::for_each(data.sets.begin(),data.sets.end(),
+//    		        [](Data * d) {
+//    		  	  	  	  StartComputation(d,rt_opt,output);
+//    		       	}
+//    	  );
+
+    	  for(auto& s : data.sets) {
     		  StartComputation(&s,rt_opt,output);
+    		  s.printLayer();
     	  }
 
-    	  /* merge in between */
-    	  printf("Merge TODO!\n");
+    	  /* merge between sets */
+    	  data.merge();
 
       } else {
     	  /************************************************************/
@@ -210,6 +221,10 @@ void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
 		/*                                                                  */
 		data->lower_bound = DetermineLowerBound(data->pnts, data->num_pnts, data->layers, data->num_layers,
 				data->nodes);
+
+		if(rt_opt.partition > 1) {
+			data->backupOnionZoro();
+		}
 
 		/*                                                                  */
 		/* compute approximate minimum decomposition (based on onions)      */

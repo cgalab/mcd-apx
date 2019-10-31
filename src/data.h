@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <list>
+#include <vector>
 
 #include "defs.h"
 
@@ -48,24 +49,33 @@ public:
 	int lower_bound = 0;
 
 	void printPnts() const;
+	void printLayer() const;
+
+	void backupOnionZoro(int idx = 0);
 
 	pnt  *pnts;
 	loop *layers;
 	node *nodes;
+
+private:
+	std::vector<node> onionZero;
 };
 
 
 class Broker : public Data {
 	using Sets  = std::list<Data>;
+	using Cfg   = rt_options;
 
 public:
 	Broker(int size = 0):Data(size) {}
 
 	void partition(int num_sets = 1);
+	void merge();
 
 	void printSets() const;
 
 	Sets sets;
+	Cfg*  cfg = nullptr;
 };
 
 #endif

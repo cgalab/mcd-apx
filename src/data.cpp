@@ -17,10 +17,30 @@ void Broker::partition(int num_sets) {
 	}
 }
 
+void Broker::merge() {
+	std::cout << "merge: " << std::endl;
+	for(auto s : sets) {
+		s.printLayer();
+	}
+}
+
 void Broker::printSets() const {
 	for(auto s : sets) {
 		s.printPnts();
 	}
+}
+
+
+void Data::backupOnionZoro(int idx) {
+	auto l = layers[idx];
+	node startNode = nodes[l.nde];
+	node nIt = startNode;
+	int cnt = 0;
+	do {
+		std::cout << nIt.vtx << " ";
+		onionZero.push_back(nIt);
+		nIt = nodes[nIt.next];
+	} while(nIt.vtx != startNode.vtx);
 }
 
 void Data::printPnts() const {
@@ -35,3 +55,13 @@ void Data::printPnts() const {
 			<< " y: " << pnts[i].y << std::endl;
 	}
 }
+
+void Data::printLayer() const {
+	std::cout << "size of onion: " << onionZero.size() << std::endl;
+	for(auto n : onionZero) {
+		std::cout << "id: " << n.vtx  << std::endl;
+	}
+}
+
+
+
