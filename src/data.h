@@ -12,6 +12,8 @@
 #include "defs.h"
 #include "numerics.h"
 
+using NodeIterator = std::vector<node>::iterator;
+
 struct ExtremPnts {
 	int xMinIdx, xMaxIdx, yMinIdx, yMaxIdx;
 	friend std::ostream& operator<< (std::ostream& os, const ExtremPnts& ep);
@@ -63,7 +65,7 @@ public:
 	void printPnts() const;
 	void printLayer() const;
 
-	void backupOnionZoro(int idx = 0);
+	void backupOnionZero(int idx = 0);
 	void determineExtremPoints();
 
 	pnt  *pnts;
@@ -73,6 +75,9 @@ public:
 	ExtremPnts ep = {0,0,0,0};
 
 	std::vector<node> onionZero;
+
+	NodeIterator cyclicNext(NodeIterator it);
+	NodeIterator cyclicPrev(NodeIterator it);
 };
 
 
@@ -100,6 +105,7 @@ public:
 
 private:
 	void mergeSets(const uint i, const uint j);
+	void repairOnionZeroAfterMerge(const uint i, const uint j);
 };
 
 #endif

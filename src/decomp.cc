@@ -571,13 +571,14 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
    WriteLayers(output, pnts, layers, 1, nodes, obj);
    ++num_cvx_areas;
 
-   if (num_CH_computations == 1) lower_bound = 1;
-   printf("#(CH computs): %d\n", num_CH_computations);
-   printf("lower bound:   %d\n", lower_bound);
-   printf("num_cvx_areas: %d\n", num_cvx_areas);
-   printf("apx ratio:     %5.3f\n", ((double) num_cvx_areas) / 
-          ((double) lower_bound));
-   
+   if (num_CH_computations == 1) {lower_bound = 1;}
+   if(rt_opt.verbose) {
+	   printf("#(CH computs): %d\n", num_CH_computations);
+	   printf("lower bound:   %d\n", lower_bound);
+	   printf("num_cvx_areas: %d\n", num_cvx_areas);
+	   printf("apx ratio:     %5.3f\n", ((double) num_cvx_areas) /
+			   ((double) lower_bound));
+   }
    free(vtx);
    free(ch_vtx);
    free(convex);

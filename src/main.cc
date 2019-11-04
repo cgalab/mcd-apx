@@ -197,7 +197,7 @@ void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
 				data->nodes);
 
 		if(rt_opt.partition > 1) {
-			data->backupOnionZoro();
+			data->backupOnionZero();
 		}
 
 		/*                                                                  */
@@ -205,12 +205,19 @@ void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
 		/*                                                                  */
 		ComputeApproxDecompOnion(output, data->pnts, data->num_pnts, data->layers, data->num_layers,
 				data->nodes, data->lower_bound, rt_opt.obj, rt_opt);
-	} else {
+	}
+
+	if(rt_opt.randomized) {
 		/*                                                                  */
 		/* compute approximate minimum decomposition (Knauer&Spillner)      */
 		/*                                                                  */
 		ComputeApproxDecomp(output, data->pnts, data->num_pnts, data->layers, data->nodes,
 				rt_opt.randomized, rt_opt.obj, rt_opt);
+	}
+
+	if(!rt_opt.randomized && !rt_opt.onion) {
+		printf("Error: no approach defined!\n");
+		exit(0);
 	}
 }
 

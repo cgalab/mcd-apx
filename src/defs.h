@@ -1,6 +1,7 @@
 #ifndef MIN_CONVEX_DECOMP_H
 #define MIN_CONVEX_DECOMP_H
 
+#include <iostream>
 #include <string>
 
 
@@ -9,12 +10,14 @@
 
 using boolean = bool;
 
-typedef struct {
-   double x;              /* x coordinate */
-   double y;              /* y coordinate */ 
-   int id;                /* original id of pnt */
-   boolean in;            /* is in interior of CHs */
-} pnt;
+class pnt {
+public:
+   double x   = 0.0;              /* x coordinate */
+   double y   = 0.0;              /* y coordinate */
+   int id     = NIL;              /* original id of pnt */
+   boolean in = false;            /* is in interior of CHs */
+   friend std::ostream& operator<< (std::ostream& os, const pnt& p);
+};
 
 typedef struct {
    int nde;
@@ -36,8 +39,8 @@ public:
    int seed				   	= NIL;
    int counter				= 1;
    int timeout				= 0;
-   std::string input_file;
-   std::string output_file;
+   std::string input_file   = "";
+   std::string output_file  = "";
    boolean randomized		= true;
    boolean onion			= false;
    boolean obj				= false;
