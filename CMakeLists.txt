@@ -3,8 +3,6 @@ project (min_convex_decomp)
 
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-gdwarf-2 -g3 -DDEBUG -O0")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 # warning flags for the C++ compiler
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -pedantic" )
