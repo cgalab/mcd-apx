@@ -1,14 +1,20 @@
 #ifndef MIN_CONVEX_DECOMP_H
 #define MIN_CONVEX_DECOMP_H
 
+#include <string>
 
-#ifdef BOOL_DEFINED
-typedef bool boolean;
-#else
-#define false 0
-#define true  (!false)
-typedef unsigned char  boolean;
-#endif
+//#ifdef BOOL_DEFINED
+//typedef bool boolean;
+//#else
+//#define false 0
+//#define true  (!false)
+//typedef unsigned char  boolean;
+//#endif
+
+#define MAX  1000001
+#define NIL       -1
+
+using boolean = bool;
 
 typedef struct {
    double x;              /* x coordinate */
@@ -30,18 +36,22 @@ typedef struct {
 } node;
 
 
-typedef struct {
-   boolean verbose;
-   boolean index;
-   int seed;
-   int counter;
-   int timeout;
-   char *input_file;
-   char *output_file;
-   boolean randomized;
-   boolean onion;
-   boolean obj;
-} rt_options;
+class rt_options {
+public:
+   boolean verbose         	= false;
+   boolean index		   	= false;
+   int seed				   	= NIL;
+   int counter				= 1;
+   int timeout				= 0;
+   std::string input_file;
+   std::string output_file;
+   boolean randomized		= true;
+   boolean onion			= false;
+   boolean obj				= false;
+
+   boolean timings			= false;
+   boolean use_stdin		= false;
+};
 
 
 typedef enum {
@@ -59,8 +69,5 @@ typedef enum {
    ONION_MESSED_UP,
    UNKNOWN_ERROR
 } errordef;
-
-#define MAX  1000001
-#define NIL       -1
 
 #endif
