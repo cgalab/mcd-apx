@@ -38,7 +38,7 @@ int p_comp(const void *, const void *);
 
 int main(int argc, char *argv[])
 {
-   rt_options rt_opt;
+   rt_options rt_opt = {false,false,NIL,1,0,"","",true,false,false,false,false};
    FILE *input, *output;
    pnt *pnts = (pnt*) malloc(MAX * sizeof(pnt));
    loop *layers = (loop*) malloc(MAX * sizeof(loop));
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
       /*                                                                     */
       /* read input pnts                                                     */
       /*                                                                     */
-      input = OpenFile(rt_opt.input_file, "r");
+      input = OpenFile(rt_opt.input_file.c_str(), "r");
       ReadInput(input, pnts, &num_pnts);
       fclose(input);
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* write points for OBJ output                                      */
          /*                                                                  */
-         output = OpenFile(rt_opt.output_file, "w");
+         output = OpenFile(rt_opt.output_file.c_str(), "w");
          WriteObjVertices(output, pnts, num_pnts);
       }
 
@@ -134,23 +134,23 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* compute approximate minimum decomposition (based on onions)      */
          /*                                                                  */
-         if (!rt_opt.obj) 
-            output = OpenFile(rt_opt.output_file, "w");
+         if (!rt_opt.obj) {
+            output = OpenFile(rt_opt.output_file.c_str(), "w");
+         }
          ComputeApproxDecompOnion(output, pnts, num_pnts, layers, num_layers,
                                   nodes, lower_bound, rt_opt.obj);
-         fclose(output);
          
-      }
-      else {
+      } else if(rt_opt.randomized) {
          /*                                                                  */
          /* compute approximate minimum decomposition (Knauer&Spillner)      */
          /*                                                                  */
-         if (!rt_opt.obj) 
-            output = OpenFile(rt_opt.output_file, "w");
+         if (!rt_opt.obj) {
+            output = OpenFile(rt_opt.output_file.c_str(), "w");
+         }
          ComputeApproxDecomp(output, pnts, num_pnts, layers, nodes,
                              rt_opt.randomized, rt_opt.obj);
-         fclose(output);
       }
+      fclose(output);
    }
    catch (errordef PolyAreaErrorCode) {
       err = 1;

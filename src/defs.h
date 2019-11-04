@@ -1,6 +1,7 @@
 #ifndef MIN_CONVEX_DECOMP_H
 #define MIN_CONVEX_DECOMP_H
 
+#include <string>
 
 #ifdef BOOL_DEFINED
 typedef bool boolean;
@@ -36,11 +37,14 @@ typedef struct {
    int seed;
    int counter;
    int timeout;
-   char *input_file;
-   char *output_file;
+   std::string input_file;
+   std::string output_file;
    boolean randomized;
    boolean onion;
    boolean obj;
+
+   boolean timings;
+   boolean use_stdin;
 } rt_options;
 
 
