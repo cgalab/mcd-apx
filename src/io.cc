@@ -208,7 +208,7 @@ void WriteLayers(FILE *output, pnt *pnts, loop *layers, int num_layers,
 
 
 
-boolean WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex, 
+boolean WriteConvexChain(FILE *output, pnt *pnts, int *convex, 
                          int *num_convex, boolean obj)
 {
    int i, j = 0, k = 1;

@@ -28,7 +28,7 @@ void WriteOutputIndex(FILE *output, node *pnt, int num_pnt);
 void *ReallocateArray(void *old_ptr, int number, size_t size);
 
 void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers, 
-                 node *nodes, int *num_nodes);
+                 node *nodes);
 
 void ConvexHull(pnt *vtx, int num_vtx, int *ch_vtx, int *num_ch_vtx);
 
@@ -51,7 +51,7 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
                          loop *layers, node *nodes,
                          boolean randomized, boolean obj);
 
-void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
+void ComputeApproxDecompOnion(FILE *output, pnt *pnts,
                               loop *layers, int num_layers, node *nodes,
                               int lower_bound, boolean obj);
 
@@ -92,7 +92,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
 void AddToConvexChain(int *convex, int *num_convex, node *nodes, int start,
                       int end, boolean ccw);
 
-boolean WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex, 
+boolean WriteConvexChain(FILE *output, pnt *pnts, int *convex, 
                          int *num_convex, boolean obj);
 
 void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes, 

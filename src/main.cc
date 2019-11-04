@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
    node *nodes = (node*) malloc(MAX * sizeof(node));
    int num_pnts = 0;
    int num_layers = 0;
-   int num_nodes  = 0;
    int err = 0;
    int lower_bound;
 
@@ -113,7 +112,7 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* compute onion layers                                             */
          /*                                                                  */
-         OnionLayers(pnts, num_pnts, layers, &num_layers, nodes, &num_nodes);
+         OnionLayers(pnts, num_pnts, layers, &num_layers, nodes);
 
          /*                                                                  */
          /* output layers                                                    */
@@ -137,7 +136,7 @@ int main(int argc, char *argv[])
          if (!rt_opt.obj) {
             output = OpenFile(rt_opt.output_file.c_str(), "w");
          }
-         ComputeApproxDecompOnion(output, pnts, num_pnts, layers, num_layers,
+         ComputeApproxDecompOnion(output, pnts, layers, num_layers,
                                   nodes, lower_bound, rt_opt.obj);
          
       } else if(rt_opt.randomized) {

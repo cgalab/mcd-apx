@@ -176,7 +176,7 @@ int DetermineLowerBound(pnt *pnts, int num_pnts, loop *layers,
 void HandleOnePoint(FILE *output, pnt *pnts, loop *layers, node *nodes,
                     int *num_cvx_areas, int L0, int *convex, boolean obj)
 {
-   int head, next, prev;
+   int head;
    int i1, i2, i3, j1;
    int L1;
    int num_convex = 0;
@@ -198,12 +198,10 @@ void HandleOnePoint(FILE *output, pnt *pnts, loop *layers, node *nodes,
       i3 = i2;
    else 
       i3 = nodes[i2].next;
-   prev = nodes[i1].prev;
-   next = nodes[i3].next;
 
    AddToConvexChain(convex, &num_convex, nodes, i1, i2, true);
    AddToConvexChain(convex, &num_convex, nodes, j1, j1, false);
-   if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+   if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
        ++(*num_cvx_areas);
    else
       printf("here 1\n");
@@ -214,29 +212,18 @@ void HandleOnePoint(FILE *output, pnt *pnts, loop *layers, node *nodes,
       /*                                                                     */
       AddToConvexChain(convex, &num_convex, nodes, i2, i3, true);
       AddToConvexChain(convex, &num_convex, nodes, j1, j1, false);
-      if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+      if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
          ++(*num_cvx_areas);
       else
          printf("here 2\n");
    }
    
-   if (prev == i3) {
-      if (next != i1)  printf("next != i1\n");
-      AppendNode(nodes, i1, j1);
-      AppendNode(nodes, j1, i3);
-      CloseLoop(nodes, i1, i3);
-      layers[L0].nde = j1;
-      layers[L0].num = 3;
-   }
-   else {
-      AppendNode(nodes, prev, i1);
-      AppendNode(nodes, i1, j1);
-      AppendNode(nodes, j1, i3);
-      CloseLoop(nodes, next, i3);
-      layers[L0].nde = j1;
-      layers[L0].num = CountNodes(nodes, j1);
-   }
-
+   CutLoopBeforeAfterNode(nodes, i3, i1);
+   AppendNode(nodes, i1, j1);
+   AppendNode(nodes, j1, i3);
+   layers[L0].nde = j1;
+   layers[L0].num = CountNodes(nodes, j1);
+   
    return;
 }
 
@@ -244,7 +231,7 @@ void HandleOnePoint(FILE *output, pnt *pnts, loop *layers, node *nodes,
 void HandleTwoPoints(FILE *output, pnt *pnts, loop *layers, node *nodes,
                      int *num_cvx_areas, int L0, int *convex, boolean obj)
 {
-   int i1, i2, i3, i4, j1, j2, prev, next;
+   int i1, i2, i3, i4, j1, j2;
    int L1;
    int num_convex = 0;
 
@@ -272,11 +259,10 @@ void HandleTwoPoints(FILE *output, pnt *pnts, loop *layers, node *nodes,
       i3 = i2;
    else
       i3 = nodes[i2].next;
-   prev = nodes[i4].prev;
-   next = nodes[i3].next;
+
    AddToConvexChain(convex, &num_convex, nodes, i1, i2, true);
    AddToConvexChain(convex, &num_convex, nodes, j2, j1, false);
-   if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+   if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
       ++(*num_cvx_areas);
    else
       printf("here 3\n");
@@ -284,7 +270,7 @@ void HandleTwoPoints(FILE *output, pnt *pnts, loop *layers, node *nodes,
    if (i2 != i3) {
       AddToConvexChain(convex, &num_convex, nodes, i2, i3, true);
       AddToConvexChain(convex, &num_convex, nodes, j2, j2, false);
-      if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+      if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
          ++(*num_cvx_areas);
       else
          printf("here 4\n");
@@ -293,28 +279,19 @@ void HandleTwoPoints(FILE *output, pnt *pnts, loop *layers, node *nodes,
    if (i1 != i4) {
       AddToConvexChain(convex, &num_convex, nodes, i4, i1, true);
       AddToConvexChain(convex, &num_convex, nodes, j1, j1, false);
-      if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+      if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
          ++(*num_cvx_areas);
       else
          printf("here 5\n");
    }
 
-   if (i3 == i4) { 
-      AppendNode(nodes, i4, j1);
-      AppendNode(nodes, j1, j2);
-      CloseLoop(nodes, i4, j2);
-      layers[L0].nde = i4;
-      layers[L0].num = 3;
-   }
-   else {
-      AppendNode(nodes, prev, i4);
-      AppendNode(nodes, i4, j1);
-      AppendNode(nodes, j1, j2);
-      AppendNode(nodes, j2, i3);
-      CloseLoop(nodes, next, i3);
-      layers[L0].nde = i3;
-      layers[L0].num = CountNodes(nodes, i3);
-   }
+
+   CutLoopBeforeAfterNode(nodes, i3, i4);
+   AppendNode(nodes, i4, j1);
+   AppendNode(nodes, j1, j2);
+   AppendNode(nodes, j2, i3);
+   layers[L0].nde = j1;
+   layers[L0].num = CountNodes(nodes, j1);
 
    return;
 }
@@ -390,7 +367,7 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
    /*                                                                        */
    AddToConvexChain(convex, &num_convex, nodes, i1, i2, true);
    AddToConvexChain(convex, &num_convex, nodes, j2, j1, false);
-   if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+   if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
       ++(*num_cvx_areas);
    else
       printf("here 6\n");
@@ -478,7 +455,7 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
          /*                                                                  */
          AddToConvexChain(convex, &num_convex, nodes, i2, i2, true);
          AddToConvexChain(convex, &num_convex, nodes, j3, j2, false);
-         if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+         if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
             ++(*num_cvx_areas);
          else {
             printf("here 7\n");
@@ -497,7 +474,7 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
          /*                                                                  */
          AddToConvexChain(convex, &num_convex, nodes, i1, i1, true);
          AddToConvexChain(convex, &num_convex, nodes, j1, j0, false);
-         if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+         if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
             ++(*num_cvx_areas);
          else
             printf("here 8\n");
@@ -674,7 +651,7 @@ void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes,
    next = nodes[i3].next;
    AddToConvexChain(convex, &num_convex, nodes, i1, i2, true);
    AddToConvexChain(convex, &num_convex, nodes, j2, j1, false);
-   if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+   if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
       ++(*num_cvx_areas);
    else
       printf("here 9\n");
@@ -682,7 +659,7 @@ void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes,
    if (i2 != i3) {
       AddToConvexChain(convex, &num_convex, nodes, i2, i3, true);
       AddToConvexChain(convex, &num_convex, nodes, j2, j2, false);
-      if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+      if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
          ++(*num_cvx_areas);
       else
          printf("here 10\n");
@@ -691,7 +668,7 @@ void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes,
    if (i1 != i4) {
       AddToConvexChain(convex, &num_convex, nodes, i4, i1, true);
       AddToConvexChain(convex, &num_convex, nodes, j1, j1, false);
-      if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+      if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
          ++(*num_cvx_areas);
       else
          printf("here 11\n");
@@ -760,7 +737,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
    j3 = nodes[j2].next;
    while (collinear(&(pnts[j1]), &(pnts[j2]), &(pnts[j3]))  &&  (j3 > j2))
       j3 = nodes[j3].next;
-   if (j3 < j2) {
+   if ((j3 < j2) &&  collinear(&(pnts[j1]), &(pnts[j2]), &(pnts[j3]))) {
       /*                                                                     */
       /* all vertices of this (innermost) layer are collinear                */
       /*                                                                     */
@@ -783,7 +760,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
    /*                                                                        */
    AddToConvexChain(convex, &num_convex, nodes, i1, i2, true);
    AddToConvexChain(convex, &num_convex, nodes, j2, j1, false);
-   if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+   if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
       ++(*num_cvx_areas);
    else
       printf("here 12\n");
@@ -798,7 +775,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
       i3 = nodes[i2].next;
       AddToConvexChain(convex, &num_convex, nodes, i2, i3, true);
       AddToConvexChain(convex, &num_convex, nodes, j1, j1, false);
-      if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+      if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
       //printf("after WriteConvexChain()\n");
          ++(*num_cvx_areas);
       else
@@ -828,7 +805,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
       /*                                                                     */
       AddToConvexChain(convex, &num_convex, nodes, i1, i2, true);
       AddToConvexChain(convex, &num_convex, nodes, j2, j1, false);
-      if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+      if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
          ++(*num_cvx_areas);
       else
          printf("here 14\n");
@@ -843,7 +820,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
          i3 = nodes[i2].next;
          AddToConvexChain(convex, &num_convex, nodes, i2, i3, true);
          AddToConvexChain(convex, &num_convex, nodes, j1, j1, false);
-         if (WriteConvexChain(output, pnts, nodes, convex, &num_convex, obj))
+         if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
          //printf("after WriteConvexChain()\n");
             ++(*num_cvx_areas);
          else
@@ -853,12 +830,11 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
       }
    }
 
-
    return;
 }
 
 
-void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int /*num_pnts*/,
+void ComputeApproxDecompOnion(FILE *output, pnt *pnts,
                               loop *layers, int num_layers, node *nodes,
                               int lower_bound, boolean obj)
 {
@@ -869,9 +845,7 @@ void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int /*num_pnts*/,
    --num_layers;
    id = num_layers;
 
-   for (L0 = 0;  L0 < num_layers - 0 ;  ++L0) {    
-      //printf("num_layers = %d: layer = %d\n", num_layers, L0);
-
+   for (L0 = 0;  L0 < num_layers;  ++L0) {    
       L1 = L0 + 1;
       if (layers[L1].num == 1) {
          HandleOnePoint(output, pnts, layers, nodes, &num_cvx_areas, L0, 
@@ -889,10 +863,12 @@ void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int /*num_pnts*/,
       }
    }
    /*
-   for (L0 = num_layers - 0;  L0 < num_layers;  ++L0) {    
-   printf("num_layers = %d: layer = %d  output only\n", num_layers, L0);
-   WriteOneLayer(output, pnts, layers, L0, nodes, obj);
+   fprintf(output, "here!\n");
+   for (L0 = 0;  L0 <= num_layers;  ++L0) {    
+      printf("num_layers = %d: layer = %d  output only\n", num_layers, L0);
+      WriteOneLayer(output, pnts, layers, L0, nodes, obj);
    }
+   fprintf(output, "done!\n");
    */
 
    WriteOneLayer(output, pnts, layers, id, nodes, obj);

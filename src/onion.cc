@@ -62,9 +62,9 @@ void ConvexHull(pnt *vtx, int num_vtx, int *ch_vtx, int *num_ch_vtx)
          uk = k - 2;
       }
       else {
-         /*                                                                   */
-         /* all points are collinear                                          */
-         /*                                                                   */
+         /*                                                                  */
+         /* all points are collinear                                         */
+         /*                                                                  */
          uk = 0;
       }
 
@@ -180,7 +180,7 @@ void FreeHulls(void)
 
 
 void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers, 
-                 node *nodes, int *num_nodes)
+                 node *nodes)
 {
    pnt *vtx = (pnt*) malloc(MAX * sizeof(pnt));
    int *ch_vtx = (int*) malloc(MAX * sizeof(int));
