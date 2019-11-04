@@ -14,7 +14,6 @@
 /*                                                                           */
 /*****************************************************************************/
 
-#include <utility>      // std::pair, std::make_pair
 #include <string>       // std::string
 #include <iostream>     // std::cout
 
@@ -226,4 +225,19 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 //   }
 
    return;
+}
+
+void PrintOptions(rt_options *rt_opt) {
+	std::cout << "verbose: " 	<< std::boolalpha << rt_opt->verbose 	<< std::endl;
+	std::cout << "index: " 		<< std::boolalpha << rt_opt->index 	 	<< std::endl;
+	std::cout << "seed: " 		<< rt_opt->seed 		<< std::endl;
+	std::cout << "counter: " 	<< rt_opt->counter 		<< std::endl;
+	std::cout << "timeout: " 	<< rt_opt->timeout 		<< std::endl;
+	std::cout << "inputfile: "  << rt_opt->input_file 	<< std::endl;
+	std::cout << "output_file: "<< rt_opt->output_file 	<< std::endl;
+	std::cout << "randomized: " << std::boolalpha << rt_opt->randomized << std::endl;
+	std::cout << "onion: " 		<< std::boolalpha << rt_opt->onion 		<< std::endl;
+	std::cout << "obj: " 		<< std::boolalpha << rt_opt->obj 		<< std::endl;
+	std::cout << "timings: " 	<< std::boolalpha << rt_opt->timings 	<< std::endl;
+	std::cout << "use_stdin: "  << std::boolalpha << rt_opt->use_stdin 	<< std::endl;
 }

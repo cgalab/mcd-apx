@@ -3,13 +3,15 @@
 
 #include <string>
 
-#ifdef BOOL_DEFINED
-typedef bool boolean;
-#else
-#define false 0
-#define true  (!false)
-typedef unsigned char  boolean;
-#endif
+//#ifdef BOOL_DEFINED
+//typedef bool boolean;
+//#else
+//#define false 0
+//#define true  (!false)
+//typedef unsigned char  boolean;
+//#endif
+
+using boolean = bool;
 
 typedef struct {
    double x;              /* x coordinate */
