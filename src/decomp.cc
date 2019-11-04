@@ -818,7 +818,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
 }
 
 
-void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
+void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int /*num_pnts*/,
                               loop *layers, int num_layers, node *nodes,
                               int lower_bound, boolean obj)
 {
