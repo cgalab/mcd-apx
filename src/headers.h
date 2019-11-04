@@ -92,8 +92,8 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
 void AddToConvexChain(int *convex, int *num_convex, node *nodes, int start,
                       int end, boolean ccw);
 
-void WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex, 
-                      int *num_convex, boolean obj);
+boolean WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex, 
+                         int *num_convex, boolean obj);
 
 void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes, 
                           int *num_cvx_areas, int L0, int *convex,
