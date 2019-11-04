@@ -31,7 +31,7 @@
 FILE *OpenFile(const char *file_name, const char *access)
 {
    FILE *file;
- 
+
    if ((file = fopen(file_name, access)) == NULL) throw FILE_ACCESS_FAILED;
 
    return file;

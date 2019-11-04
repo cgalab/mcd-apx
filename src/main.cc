@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
       /*                                                                     */
       /* read input pnts                                                     */
       /*                                                                     */
-      input = OpenFile(rt_opt.input_file, "r");
+      input = OpenFile(rt_opt.input_file.c_str(), "r");
       ReadInput(input, data.pnts, &data.num_pnts);
       fclose(input);
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* write points for OBJ output                                      */
          /*                                                                  */
-    	 output = OpenFile(rt_opt.output_file, "w");
+         output = OpenFile(rt_opt.output_file.c_str(), "w");
          WriteObjVertices(output, data.pnts, data.num_pnts);
       }
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
       /*                                                                     */
       qsort(data.pnts, data.num_pnts, sizeof(pnt), p_comp);
 
-      if (!rt_opt.obj) {output = OpenFile(rt_opt.output_file, "w");}
+      if (!rt_opt.obj) {output = OpenFile(rt_opt.output_file.c_str(), "w");}
 
 
       if(rt_opt.partition > 1) {
@@ -112,7 +112,6 @@ int main(int argc, char *argv[])
       }
       FreeHulls();
       fclose(output);
-
    }
    catch (errordef PolyAreaErrorCode) {
 	  err = 1;

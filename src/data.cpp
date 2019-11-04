@@ -38,7 +38,7 @@ void Broker::merge() {
 		}
 	}
 
-	for(int i = 0; i+1 < sets.size(); ++i) {
+	for(int i = 0; i+1 < sets.size(); i+=2) {
 		if(cfg->verbose) {
 			std::cout << "merging " << i << " and " << i+1 << std::endl;
 		}
