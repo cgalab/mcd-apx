@@ -11,6 +11,9 @@
 //typedef unsigned char  boolean;
 //#endif
 
+#define MAX  1000001
+#define NIL       -1
+
 using boolean = bool;
 
 typedef struct {
@@ -33,21 +36,22 @@ typedef struct {
 } node;
 
 
-typedef struct {
-   boolean verbose;
-   boolean index;
-   int seed;
-   int counter;
-   int timeout;
+class rt_options {
+public:
+   boolean verbose         	= false;
+   boolean index		   	= false;
+   int seed				   	= NIL;
+   int counter				= 1;
+   int timeout				= 0;
    std::string input_file;
    std::string output_file;
-   boolean randomized;
-   boolean onion;
-   boolean obj;
+   boolean randomized		= true;
+   boolean onion			= false;
+   boolean obj				= false;
 
-   boolean timings;
-   boolean use_stdin;
-} rt_options;
+   boolean timings			= false;
+   boolean use_stdin		= false;
+};
 
 
 typedef enum {
@@ -65,8 +69,5 @@ typedef enum {
    ONION_MESSED_UP,
    UNKNOWN_ERROR
 } errordef;
-
-#define MAX  1000001
-#define NIL       -1
 
 #endif

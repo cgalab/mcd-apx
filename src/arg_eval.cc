@@ -153,13 +153,9 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 		}
 	}
 
-	if(rt_opt->input_file != "") {
-		return;
-	}
+	if(rt_opt->input_file != "") {return;}
 
-	if (argc - optind > 1) {
-		usage(argv[0], 1);
-	}
+	if (argc - optind > 1) {usage(argv[0], 1);}
 
 	rt_opt->use_stdin = true;
 	if (argc - optind == 1) {
@@ -170,74 +166,5 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 		}
 	}
 
-
-   /*                                                                        */
-   /* parse the command-line arguments                                       */
-   /*                                                                        */
-//   while ((count < argc) && success)    {
-//
-//      if (strcmp(argv[count],"--input") == 0) {
-//         ++count;
-//         if ((success = (count < argc)))
-//            rt_opt->input_file = argv[count];
-//      }
-//      else if (strcmp(argv[count],"--output") == 0) {
-//         ++count;
-//         if ((success = (count < argc)))
-//            rt_opt->output_file = argv[count];
-//      }
-//      else if (strcmp(argv[count],"--seed") == 0) {
-//         ++count;
-//         if ((success = (count < argc)))
-//            rt_opt->seed = atoi(argv[count]);
-//      }
-//      else if (strcmp(argv[count],"--counter") == 0) {
-//         ++count;
-//         if ((success = (count < argc)))
-//            rt_opt->counter = atoi(argv[count]);
-//      }
-//      else if (strcmp(argv[count],"--timeout") == 0) {
-//         ++count;
-//         if ((success = (count < argc)))
-//            rt_opt->timeout = atoi(argv[count]);
-//      }
-//      else if (strcmp(argv[count],"--verbose") == 0) {
-//         rt_opt->verbose = true;
-//      }
-//      else if (strcmp(argv[count],"--random") == 0) {
-//         rt_opt->randomized = true;
-//         rt_opt->onion = false;
-//      }
-//      else if (strcmp(argv[count],"--index") == 0) {
-//         rt_opt->index = true;
-//      }
-//      else if (strcmp(argv[count],"--onion") == 0) {
-//          rt_opt->randomized = false;
-//          rt_opt->onion = true;
-//      }
-//      else if (strcmp(argv[count],"--obj") == 0) {
-//         rt_opt->obj = true;
-//      }
-//      else {
-//         throw CL_ARG_ERROR;
-//      }
-//      ++count;
-//   }
-
    return;
-}
-
-void PrintOptions(rt_options *rt_opt) {
-	std::cout << "verbose: " 	<< std::boolalpha << rt_opt->verbose 	<< std::endl;
-	std::cout << "index: " 		<< std::boolalpha << rt_opt->index 	 	<< std::endl;
-	std::cout << "seed: " 		<< rt_opt->seed 		<< std::endl;
-	std::cout << "counter: " 	<< rt_opt->counter 		<< std::endl;
-	std::cout << "timeout: " 	<< rt_opt->timeout 		<< std::endl;
-	std::cout << "inputfile: "  << rt_opt->input_file 	<< std::endl;
-	std::cout << "output_file: "<< rt_opt->output_file 	<< std::endl;
-	std::cout << "randomized: " << std::boolalpha << rt_opt->randomized << std::endl;
-	std::cout << "onion: " 		<< std::boolalpha << rt_opt->onion 		<< std::endl;
-	std::cout << "obj: " 		<< std::boolalpha << rt_opt->obj 		<< std::endl;
-	std::cout << "timings: " 	<< std::boolalpha << rt_opt->timings 	<< std::endl;
-	std::cout << "use_stdin: "  << std::boolalpha << rt_opt->use_stdin 	<< std::endl;
 }
