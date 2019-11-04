@@ -82,19 +82,46 @@ void Broker::mergeSets(const uint i, const uint j) {
 			/* both CCW, add quad face :) */
 			Face f = {pA->id,pA2->id,pB2->id,pB->id};
 			faces.push_back(f);
-
+			/* iterate both */
+			if(itA2 != itAend) {itA = itA2;}
+			if(itB2 != itBend) {itB = itB2;}
 		} else {
+			/* at least one corner is 'reflex' */
+			bool cA  = CCW(pB,pA,pA2);	bool cB  = CCW(pB2,pB,pA);
+			bool cA2 = CCW(pA,pA2,pB);	bool cB2 = CCW(pA2,pB2,pB);
+
+			if(cA || cB) {
+				if((cA && cB && pA2->y > pB2->y) || (cA2 && !cB2)) {
+					/* chose B,A,A2 */
+					Face f1 = {pB->id,pA->id,pA2->id};
+					faces.push_back(f1);
+					/* iterate single */
+					if(itA2 != itAend) {itA = itA2;}
+				} else if( (cA2 && cB2 && pA2->y < pB2->y) || (!cA2 && cB2)) {
+					/* chose B2,B,A */
+					Face f1 = {pB2->id,pB->id,pA->id};
+					faces.push_back(f1);
+					/* iterate single */
+					if(itB2 != itBend) {itB = itB2;}
+				}
+			}
+
 			if(CCW(pA,pA2,pB2) && CCW(pB2,pB,pA) ) {
 				Face f1 = {pA->id,pA2->id,pB2->id};
 				Face f2 = {pB2->id,pB->id,pA->id};
 				faces.push_back(f1);
 				faces.push_back(f2);
-
+				/* iterate both */
+				if(itA2 != itAend) {itA = itA2;}
+				if(itB2 != itBend) {itB = itB2;}
 			} else if(CCW(pA2,pB2,pB) && CCW(pB,pA,pA2)) {
 				Face f1 = {pA2->id,pB2->id,pB->id};
 				Face f2 = {pB->id,pA->id,pA2->id};
 				faces.push_back(f1);
 				faces.push_back(f2);
+				/* iterate both */
+				if(itA2 != itAend) {itA = itA2;}
+				if(itB2 != itBend) {itB = itB2;}
 			} else {
 				if(cfg->verbose) {
 					std::cout << "ERROR! some bad decisions were made..." << std::endl;
@@ -102,9 +129,6 @@ void Broker::mergeSets(const uint i, const uint j) {
 				}
 			}
 		}
-		/* iterate */
-		if(itA2 != itAend) {itA = itA2;}
-		if(itB2 != itBend) {itB = itB2;}
 	} while(itA2 != itAend && itB2 != itBend);
 }
 
@@ -127,7 +151,7 @@ void Broker::printSets() const {
 	}
 }
 
-bool Broker::fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *pd) const {
+bool Broker::fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *pd) {
 	bool cw  = ( CW(pa,pb,pc) &&  CW(pb,pc,pd) &&  CW(pc,pd,pa) &&  CW(pd,pa,pb));
 	bool ccw = (CCW(pa,pb,pc) && CCW(pb,pc,pd) && CCW(pc,pd,pa) && CCW(pd,pa,pb));
 	return cw || ccw;

@@ -96,7 +96,7 @@ public:
 
 	Cfg*  cfg = nullptr;
 
-	bool fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *d) const;
+	bool fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *d);
 
 private:
 	void mergeSets(const uint i, const uint j);
