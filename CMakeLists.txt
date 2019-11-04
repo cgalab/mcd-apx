@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
-
 project (min_convex_decomp)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-gdwarf-2 -g3 -DDEBUG -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
@@ -22,4 +22,3 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 # More verbose output by make
 set(CMAKE_VERBOSE_MAKEFILE "OFF")
 add_subdirectory(src)
-
