@@ -12,17 +12,9 @@ if( HAVE_STDBOOL_H )
    add_definitions(-DHAVE_BOOL)
 endif()
 
-include(CheckFunctionExists) 
-check_function_exists(random HAVE_RANDOM)
-
-if( NOT HAVE_RANDOM )
-	message("Adding custom random function")
-	add_definitions(-DRAND)
-endif( NOT HAVE_RANDOM )
-
-add_executable(mcd_apx main.cc ${min_convex_decomp_SRC}) 
+add_executable(mcd_apx main.cc ${min_convex_decomp_SRC})
 target_link_libraries(mcd_apx ${min_convex_decomp_LIBS})
 
 
-get_directory_property( DirDefs COMPILE_DEFINITIONS ) 
+get_directory_property( DirDefs COMPILE_DEFINITIONS )
 message( "COMPILE_DEFINITIONS = ${DirDefs}" )
