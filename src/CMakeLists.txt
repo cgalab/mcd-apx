@@ -6,12 +6,6 @@ set( min_convex_decomp_SRC
 	io.cc arg_eval.cc onion.cc decomp.cc
 )
 
-include(CheckIncludeFile)
-check_include_file(stdbool.h HAVE_STDBOOL_H)
-if( HAVE_STDBOOL_H )
-   add_definitions(-DHAVE_BOOL)
-endif()
-
 add_executable(mcd_apx main.cc ${min_convex_decomp_SRC})
 target_link_libraries(mcd_apx ${min_convex_decomp_LIBS})
 
