@@ -118,7 +118,7 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 			break;
 
 		case 's':
-			rt_opt->seed = atoi(optarg);
+			rt_opt->seed = atol(optarg);
 			break;
 
 		case 'c':
