@@ -12,7 +12,7 @@
 #include "defs.h"
 #include "numerics.h"
 
-using OnionZero    = std::list<node>;
+using OnionZero    = std::list<long>;
 using NodeIterator = OnionZero::iterator;
 
 struct ExtremPnts {
@@ -36,13 +36,13 @@ public:
 	}
 	Data(int size = 0) {
 		if(size == 0) {
-			pnts   = new pnt[MAX];
-			layers = new loop[MAX];
-			nodes  = new node[MAX];
+			pnts   = new pnt[MAX]();
+			layers = new loop[MAX]();
+			nodes  = new node[MAX]();
 		} else {
-			pnts   = new pnt[size];
-			layers = new loop[size];
-			nodes  = new node[size];
+			pnts   = new pnt[size]();
+			layers = new loop[size]();
+			nodes  = new node[size]();
 		}
 	}
 	~Data() {
