@@ -58,6 +58,18 @@ inline double Area(pnt* p2, pnt* p3)
    return ( p2->x * p3->y -  p2->y * p3->x);
 }
 
+inline boolean PntInTri(pnt* p, pnt* t1, pnt* t2, pnt* t3)
+{
+	auto a = CW(p,t1,t2);
+	auto b = CW(p,t2,t3);
+	auto c = CW(p,t3,t1);
 
+//	std::cout << "p: " << *p << std::endl;
+//	std::cout << "a: " << *t1<< std::endl;
+//	std::cout << "b: " << *t2<< std::endl;
+//	std::cout << "c: " << *t3<< std::endl << std::endl;
+
+	return (a == b && b == c);
+}
 
 #endif

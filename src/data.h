@@ -12,10 +12,12 @@
 #include "defs.h"
 #include "numerics.h"
 
-using NodeIterator = std::vector<node>::iterator;
+using OnionZero    = std::list<node>;
+using NodeIterator = OnionZero::iterator;
 
 struct ExtremPnts {
-	int xMinIdx, xMaxIdx, yMinIdx, yMaxIdx;
+	/* onionZero Iterator */
+	NodeIterator xMinIdx, xMaxIdx, yMinIdx, yMaxIdx;
 	friend std::ostream& operator<< (std::ostream& os, const ExtremPnts& ep);
 };
 
@@ -72,9 +74,9 @@ public:
 	loop *layers;
 	node *nodes;
 
-	ExtremPnts ep = {0,0,0,0};
+	ExtremPnts ep;
 
-	std::vector<node> onionZero;
+	OnionZero onionZero;
 
 	NodeIterator cyclicNext(NodeIterator it);
 	NodeIterator cyclicPrev(NodeIterator it);
@@ -105,7 +107,6 @@ public:
 
 private:
 	void mergeSets(const uint i, const uint j);
-	void repairOnionZeroAfterMerge(const uint i, const uint j);
 };
 
 #endif

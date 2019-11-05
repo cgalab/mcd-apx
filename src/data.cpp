@@ -4,7 +4,7 @@
 #include <algorithm>    // std::for_each
 
 std::ostream& operator<< (std::ostream& os, const ExtremPnts& ep) {
-	os << ep.xMinIdx << ", " << ep.xMaxIdx << ", " << ep.yMinIdx << ", " << ep.yMaxIdx;
+//	os << ep.xMinIdx << ", " << ep.xMaxIdx << ", " << ep.yMinIdx << ", " << ep.yMaxIdx;
 
 	return os;
 }
@@ -18,6 +18,7 @@ void Broker::partition(int num_sets) {
 	/* out of pure laziness we start by only partition the x-values */
 	for(int i = 0; i < num_sets; ++i) {
 		auto set = Data(pnts_per_set);
+		if(i == 0) {set = Data();}
 		for(int j = 0; j < pnts_per_set && (i*pnts_per_set + j) < num_pnts; ++j) {
 			set.pnts[j] = pnts[i*pnts_per_set + j];
 			set.num_pnts = j;
@@ -41,41 +42,35 @@ void Broker::merge() {
 		}
 	}
 
-	for(unsigned long i = 0; i+1 < sets.size(); ++i) {
+	for(unsigned long i = 1; i < sets.size(); ++i) {
 		if(cfg->verbose) {
-			std::cout << "merging " << i << " and " << i+1 << std::endl;
+			std::cout << "merging " << 0 << " and " << i << std::endl;
 		}
 
-		mergeSets(i,i+1);
-		repairOnionZeroAfterMerge(i,i+1);
+		mergeSets(0,i);
 	}
 }
 
 void Broker::mergeSets(const uint i, const uint j) {
 	auto setA = &sets[i]; auto setB = &sets[j];
 
-	auto itA = setA->onionZero.begin();
-	auto itB = setB->onionZero.begin();
-	auto itA2 = itA, itAend = itA;
-	auto itB2 = itB, itBend = itB;
+	auto itA = setA->ep.yMaxIdx;
+	auto itB = setB->ep.yMaxIdx;
 
-	std::advance(itA,setA->ep.yMaxIdx);
-	std::advance(itB,setB->ep.yMaxIdx);
+	auto itA2 = itA;
+	auto itB2 = itB;
 
-	std::advance(itAend,setA->ep.yMinIdx);
-	std::advance(itBend,setB->ep.yMinIdx);
+	auto itAend = setA->ep.yMinIdx;
+	auto itBend = setB->ep.yMinIdx;
+
+	std::vector<NodeIterator> RemoveFromA;
+	std::vector<NodeIterator> RemoveFromB;
+
+	bool A2done = false, B2done = false;
 
 	do {
-		itB2 = std::next(itB);
-		if(itB2 == setB->onionZero.end()) {
-			itB2 = setB->onionZero.begin();
-		}
-
-		if(itA == setA->onionZero.begin()) {
-			itA2 = std::prev(setA->onionZero.end());
-		} else {
-			itA2 = std::prev(itA);
-		}
+		if(itA2 != itAend) {itA2 = setA->cyclicPrev(itA);}
+		if(itB2 != itBend) {itB2 = setB->cyclicNext(itB);}
 
 		pnt* pA  = &setA->pnts[itA->vtx];
 		pnt* pB  = &setB->pnts[itB->vtx];
@@ -84,49 +79,111 @@ void Broker::mergeSets(const uint i, const uint j) {
 
 		bool cA  = CCW(pB,pA,pA2);	bool cB  = CCW(pB2,pB,pA);
 		bool cA2 = CCW(pA,pA2,pB2); bool cB2 = CCW(pA2,pB2,pB);
-
-		if(fourConvexPoints(pA,pA2,pB2,pB)) {
+		if((!A2done || itA2 != itAend) && (!B2done || itB2 != itBend) && fourConvexPoints(pA,pA2,pB2,pB)) {
 			/* both CCW, add quad face :) */
 			Face f = {pA->id,pA2->id,pB2->id,pB->id};
 			faces.push_back(f);
 			/* iterate both */
-			itA = itA2;
-			itB = itB2;
-		} else if(cA && (cB2 || pA2->y > pB2->y)) {
+			if(itA2 == itAend) {A2done = true;}
+			if(itB2 == itBend) {B2done = true;}
+			if(itA2 != itAend) {itA = itA2; RemoveFromA.push_back(itA2);}
+			if(itB2 != itBend) {itB = itB2; RemoveFromB.push_back(itB2);}
+		} else if( (!A2done || itA2 != itAend) && cA && !PntInTri(pB2,pA2,pA,pB)) { //(cB2 || pA2->y > pB2->y || pB2->x > pB->x)) {
 			/* chose B,A,A2 */
 			Face f1 = {pB->id,pA->id,pA2->id};
 			faces.push_back(f1);
 			/* iterate single */
-			itA = itA2;
-		} else if( cB && (cA2 || pA2->y < pB2->y ) ) {
+			if(itA2 == itAend) {A2done = true;}
+			if(itA2 != itAend) {itA = itA2; RemoveFromA.push_back(itA2);}
+		} else if((!B2done || itB2 != itBend) && cB && !PntInTri(pA2,pA,pB,pB2)) { //(cA2 || pA2->y < pB2->y || pA2->x < pA->x ) ) {
 			/* chose B2,B,A */
 			Face f1 = {pB2->id,pB->id,pA->id};
 			faces.push_back(f1);
 			/* iterate single */
-			itB = itB2;
+			if(itB2 == itBend) {B2done = true;}
+			if(itB2 != itBend) {itB = itB2; RemoveFromB.push_back(itB2);}
 		} else {
 			/* one (initial) CH point may be far above/below other */
-			if(pA->y > pB->y) {
+			if(itA2 != itAend && CW(pA,pA2,pB)) {
+				std::cout<< " it A ";
 				itA = itA2;
-			} else {
+			} else if(itB2 != itBend && CCW(pB,pB2,pA)) {
+				std::cout<< " it B ";
 				itB = itB2;
-			}
-			if(cfg->verbose) {
-				std::cout << "ERROR! some bad decisions were made... (mergeSets)" << std::endl;
+			} else if(cfg->verbose && itA2 != itAend && itB2 != itBend) {
+				std::cout << "ERROR! (" << i << "," << j << ") some bad decisions were made... (mergeSets)" << std::endl;
 			}
 		}
-	} while(itA != itAend && itB != itBend);
+	} while(!(itA2 == itAend && itB2 == itBend));
+
+	std::cout << std::boolalpha << "a2: " << A2done << ", b2:" << B2done << std::endl;
 
 	/* add the final triangle */
-	std::set<pnt*> triPnts = {&setA->pnts[itA->vtx],
-			&setB->pnts[itB->vtx],
+	std::vector<pnt*> pF = {
 			&setA->pnts[itA2->vtx],
 			&setB->pnts[itB2->vtx]
 	};
 
-	Face f;
-	for(auto p : triPnts) {f.push_back(p->id);}
-	faces.push_back(f);
+	if(!B2done) {
+		pF.push_back(&setB->pnts[itB->vtx]);
+	}
+	if(!A2done) {
+		pF.push_back(&setA->pnts[itA->vtx]);
+	}
+
+	std::set<pnt*> triSet;
+	std::cout << " points: "<<std::endl;
+	std::for_each(pF.begin(),pF.end(),[&](pnt *p) {std::cout<< *p << std::endl; triSet.insert(p);});
+
+	if(triSet.size() == 4 && fourConvexPoints(pF[0],pF[1],pF[2],pF[3])) {
+		std::cout << "-add a convex 4-face! " << std::endl;
+		faces.push_back({pF[0]->id,pF[1]->id,pF[2]->id,pF[3]->id});
+	} else if(triSet.size() == 4) {
+		int cwIdx = NIL;
+		for(int i = 0; i < 4; ++i) {
+			if(CW(pF[i],pF[(i+1)%4],pF[(i+2)%4])) {
+				cwIdx = (i+1)%4;
+				break;
+			}
+		}
+		if(cwIdx == NIL) {std::cout << "ERROR cw idx not found!" << std::endl;}
+
+		faces.push_back({pF[(cwIdx)]->id,pF[(cwIdx+1)%4]->id,pF[(cwIdx+2)%4]->id});
+		faces.push_back({pF[(cwIdx+2)%4]->id,pF[(cwIdx+3)%4]->id,pF[(cwIdx+4)%4]->id});
+		std::cout << " add two faces ! " << std::endl;
+	} else {
+		Face f;
+		std::cout << std::endl << " add a single face ! ";
+		std::for_each(triSet.begin(),triSet.end(),[&](pnt *p) {std::cout << p->id << " "; f.push_back(p->id);});
+//		faces.push_back({pF[0]->id,pF[1]->id,pF[2]->id});
+		faces.push_back(f);
+	}
+
+
+	/* ----------------------------- update onionZero --------------------------- */
+
+	/* remove nodes handled in the merge above */
+	std::for_each(RemoveFromA.begin(),RemoveFromA.end(),[&](NodeIterator i){setA->onionZero.erase(i);});
+	std::for_each(RemoveFromB.begin(),RemoveFromB.end(),[&](NodeIterator i){setB->onionZero.erase(i);});
+
+	/* itAend is the start of our insert of the list that starts at itBend */
+	itB = itBend; itA = itAend;
+	auto itBStop = itB;
+	do {
+		itA = setA->cyclicNext(itA);
+		/* add point */
+		auto pnt = setB->pnts[itB->vtx];
+		setA->pnts[setA->num_pnts] = pnt;
+		node n = {setA->num_pnts,NIL,NIL};
+		++setA->num_pnts;
+		itA = setA->onionZero.insert(itA,n);
+
+		itB = setB->cyclicNext(itB);
+	} while(itB != itBStop);
+
+	std::cout << "A onion: "; setA->printLayer(); std::cout << std::endl;
+
+	setA->determineExtremPoints();
 }
 
 void Broker::writeFacesToFile(FILE *output) const {
@@ -170,78 +227,6 @@ NodeIterator Data::cyclicNext(NodeIterator it) {
 	return (nIt != onionZero.end()) ? nIt : onionZero.begin();
 }
 
-void Broker::repairOnionZeroAfterMerge(const uint i, const uint j) {
-	auto setA = &sets[i]; auto setB = &sets[j];
-
-	auto itA = setA->onionZero.begin();
-	auto itB = setB->onionZero.begin();
-	auto itAend = itA;
-	auto itBend = itB;
-
-	std::advance(itA,setA->ep.yMaxIdx);
-	std::advance(itB,setB->ep.yMaxIdx);
-	std::advance(itAend,setA->ep.yMinIdx);
-	std::advance(itBend,setB->ep.yMinIdx);
-
-	auto itAmerge = itA;
-	auto itBmerge = itBend;
-
-	std::cout << "begin removal..." << std::endl; fflush(stdout);
-
-	/*			removing the merged part of the zero onion layer 		*/
-	itA = setA->cyclicNext(itA);
-	itB = setB->cyclicPrev(itB);
-	itAend = setA->cyclicPrev(itAend);
-	itBend = setB->cyclicNext(itBend);
-
-	if(itAend - itA > 0) {
-		std::cout << "a"; fflush(stdout);
-		setA->onionZero.erase(itA,itAend);
-	} else {
-		std::cout << "a1"; fflush(stdout);
-		setA->onionZero.erase(itAend,setA->onionZero.end());
-		setA->onionZero.erase(setA->onionZero.begin(),itA);
-	}
-	if(itBend - itB > 0) {
-		std::cout << "b"; fflush(stdout);
-		setB->onionZero.erase(itB,itBend);
-	} else {
-		std::cout << "b1"; fflush(stdout);
-		setB->onionZero.erase(itBend,setB->onionZero.end());
-		setB->onionZero.erase(setB->onionZero.begin(),itB);
-	}
-
-	std::cout << "begin replacement..." << std::endl; fflush(stdout);
-
-	/*			repair the zero onion layer of both sets		 		*/
-	itA = setA->onionZero.begin();
-	itB = setB->onionZero.begin();
-	itAend = itA; itBend = itB;
-	std::advance(itA,setA->ep.yMaxIdx);
-	std::advance(itB,setB->ep.yMaxIdx);
-	std::advance(itAend,setA->ep.yMinIdx);
-	std::advance(itBend,setB->ep.yMinIdx);
-
-	/* backup one list */
-//	std::list<node> listBak(setA->onionZero);
-
-	std::cout << "A..." << std::endl; fflush(stdout);
-	if(itBend - itB > 0) {
-		setA->onionZero.insert(itAend,itB,itBend);
-	} else {
-		setA->onionZero.insert(itAend,itB,setB->onionZero.end());
-		setA->onionZero.insert(itAend,setB->onionZero.begin(),itBend);
-	}
-	std::cout << "B..." << std::endl; fflush(stdout);
-
-	if(itAend - itA > 0) {
-		setB->onionZero.insert(itBend,itA,itAend);
-	} else {
-		setB->onionZero.insert(itBend,itA,setA->onionZero.end());
-		setB->onionZero.insert(itBend,setA->onionZero.begin(),itAend);
-	}
-	std::cout << "end rep. ..." << std::endl; fflush(stdout);
-}
 
 void Data::backupOnionZero(int idx) {
 	auto l = layers[idx];
@@ -258,14 +243,12 @@ void Data::determineExtremPoints() {
 	auto minX = pnts[0].x;	auto maxX = pnts[0].x;
 	auto minY = pnts[0].y;	auto maxY = pnts[0].y;
 
-	int idx = 0;
-	for(auto n : onionZero) {
-		auto p = pnts[n.vtx];
-		if(p.x < minX) {minX = p.x; ep.xMinIdx = idx;}
-		if(p.x > maxX) {maxX = p.x; ep.xMaxIdx = idx;}
-		if(p.y < minY) {minY = p.y; ep.yMinIdx = idx;}
-		if(p.y > maxY) {maxY = p.y; ep.yMaxIdx = idx;}
-		++idx;
+	for(auto it = onionZero.begin(); it != onionZero.end(); ++it) {
+		auto p = pnts[it->vtx];
+		if(p.x < minX) {minX = p.x; ep.xMinIdx = it;}
+		if(p.x > maxX) {maxX = p.x; ep.xMaxIdx = it;}
+		if(p.y < minY) {minY = p.y; ep.yMinIdx = it;}
+		if(p.y > maxY) {maxY = p.y; ep.yMaxIdx = it;}
 	}
 }
 
