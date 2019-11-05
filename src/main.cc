@@ -39,7 +39,7 @@ int p_comp(const void *, const void *);
 int main(int argc, char *argv[])
 {
    rt_options rt_opt;
-   FILE *input, *output;
+   FILE *input = NULL, *output = NULL;
    pnt *pnts = (pnt*) malloc(MAX * sizeof(pnt));
    loop *layers = (loop*) malloc(MAX * sizeof(loop));
    node *nodes = (node*) malloc(MAX * sizeof(node));
