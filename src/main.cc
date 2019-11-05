@@ -58,8 +58,7 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* prepare for randomized cutting of convex areas                   */
          /*                                                                  */
-         if (rt_opt.seed != NIL)  srand48(rt_opt.seed);
-         else {
+         if (rt_opt.seed == NIL) {
             long rseed;
             int need = sizeof(rseed);
 #define RND_SOURCE "/dev/urandom"
@@ -77,9 +76,10 @@ int main(int argc, char *argv[])
                fprintf(stderr, "Warning: short read from /dev/urandom, randomness not seeded well.\n");
             }
             close(fd);
-            /* fprintf(stderr, "Seeding with %lx\n", rseed); */
-            srand48(rseed);
+            rt_opt.seed = rseed;
          }
+         printf("random_seed: %ld\n", rt_opt.seed);
+         srand48(rt_opt.seed);
       }
          
       /*                                                                     */
