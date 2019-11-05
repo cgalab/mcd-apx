@@ -89,11 +89,12 @@ int main(int argc, char *argv[])
       ReadInput(input, pnts, &num_pnts);
       fclose(input);
 
+      output = OpenFile(rt_opt.output_file.c_str(), "w");
+
       if (rt_opt.obj) {
          /*                                                                  */
          /* write points for OBJ output                                      */
          /*                                                                  */
-         output = OpenFile(rt_opt.output_file.c_str(), "w");
          WriteObjVertices(output, pnts, num_pnts);
       }
 
@@ -133,9 +134,6 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* compute approximate minimum decomposition (based on onions)      */
          /*                                                                  */
-         if (!rt_opt.obj) {
-            output = OpenFile(rt_opt.output_file.c_str(), "w");
-         }
          ComputeApproxDecompOnion(output, pnts, layers, num_layers,
                                   nodes, lower_bound, rt_opt.obj);
          
@@ -143,9 +141,6 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* compute approximate minimum decomposition (Knauer&Spillner)      */
          /*                                                                  */
-         if (!rt_opt.obj) {
-            output = OpenFile(rt_opt.output_file.c_str(), "w");
-         }
          ComputeApproxDecomp(output, pnts, num_pnts, layers, nodes,
                              rt_opt.randomized, rt_opt.obj);
       }
