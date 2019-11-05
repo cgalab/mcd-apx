@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
             rt_opt.seed = rseed;
          }
          printf("random_seed: %ld\n", rt_opt.seed);
+         fflush(stdout);
          srand48(rt_opt.seed);
       }
          
