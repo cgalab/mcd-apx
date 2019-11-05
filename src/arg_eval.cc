@@ -157,12 +157,10 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 
 	if (argc - optind > 1) {usage(argv[0], 1);}
 
-	rt_opt->use_stdin = true;
 	if (argc - optind == 1) {
 		std::string fn(argv[optind]);
 		if (fn != "-") {
 			rt_opt->input_file = fn;
-			rt_opt->use_stdin = false;
 		}
 	}
 
