@@ -58,6 +58,11 @@ inline double Area(pnt* p2, pnt* p3)
    return ( p2->x * p3->y -  p2->y * p3->x);
 }
 
+inline pnt midpoint(pnt* p1, pnt* p2) {
+	pnt d{p2->x - p1->x,p2->y - p1->y,NIL,false};
+	return pnt{p1->x + d.x/2, p1->y + d.y/2,NIL,false};
+}
+
 inline boolean PntInTri(pnt* p, pnt* t1, pnt* t2, pnt* t3)
 {
 	auto a = CW(p,t1,t2);

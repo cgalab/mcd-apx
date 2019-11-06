@@ -4,81 +4,17 @@
 #include <algorithm>    // std::for_each
 
 std::ostream& operator<< (std::ostream& os, const ExtremPnts& ep) {
-//	os << ep.xMinIdx << ", " << ep.xMaxIdx << ", " << ep.yMinIdx << ", " << ep.yMaxIdx;
+	os << *ep.xMinIdx << ", " << *ep.xMaxIdx << ", " << *ep.yMinIdx << ", " << *ep.yMaxIdx;
 
 	return os;
 }
-
-
-void Broker::partition(int num_sets) {
-	assert(num_sets > 1);
-
-	int pnts_per_set = num_pnts/num_sets + 1;
-
-	/* out of pure laziness we start by only partition the x-values */
-	for(int i = 0; i < num_sets; ++i) {
-		auto set = Data(pnts_per_set);
-		if(i == 0) {set = Data();}
-		for(int j = 0; j < pnts_per_set && (i*pnts_per_set + j) < num_pnts; ++j) {
-			set.pnts[j] = pnts[i*pnts_per_set + j];
-			set.num_pnts = j;
-		}
-		++set.num_pnts;
-		sets.push_back(set);
+Data& Data::operator=(const Data& other) {
+		num_pnts = other.num_pnts;
+		std::copy(&other.pnts[0],   &other.pnts[0]   + num_pnts, &pnts[0]);
+		std::copy(&other.layers[0], &other.layers[0] + num_pnts, &layers[0]);
+		std::copy(&other.nodes[0],  &other.nodes[0]  + num_pnts, &nodes[0]);
+		return *this;
 	}
-}
-
-void Broker::merge() {
-	for(auto& s : sets) {
-		s.determineExtremPoints();
-		if(cfg->verbose) {
-			s.printLayer();
-		}
-	}
-
-	if(cfg->verbose) {
-		for(auto& s : sets) {
-			std::cout << s.ep << std::endl;
-		}
-	}
-
-	for(unsigned long i = 1; i < sets.size(); ++i) {
-		if(cfg->verbose) {
-			std::cout << "merging " << 0 << " and " << i << std::endl;
-		}
-
-//		mergeSets(0,i);
-	}
-}
-
-void Broker::mergeSets(const uint i, const uint j) {
-
-}
-
-void Broker::writeFacesToFile(FILE *output) const {
-	std::stringstream ss;
-	for(auto f : faces) {
-		ss << "f";
-		for(auto i : f) {ss << " " << i+1;}
-		ss << "\n";
-	}
-	fprintf(output, "%s", ss.str().c_str());
-}
-
-
-void Broker::printSets() const {
-	for(auto s : sets) {
-		s.printPnts();
-	}
-}
-
-
-bool Broker::fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *pd) {
-	bool cw  = ( CW(pa,pb,pc) &&  CW(pb,pc,pd) &&  CW(pc,pd,pa) &&  CW(pd,pa,pb));
-	bool ccw = (CCW(pa,pb,pc) && CCW(pb,pc,pd) && CCW(pc,pd,pa) && CCW(pd,pa,pb));
-	return cw || ccw;
-}
-
 
 NodeIterator Data::cyclicPrev(NodeIterator it) {
 	if(it == onionZero.begin()) {
@@ -93,6 +29,45 @@ NodeIterator Data::cyclicNext(NodeIterator it) {
 	return (nIt != onionZero.end()) ? nIt : onionZero.begin();
 }
 
+Data::Data(const Data &data):Data(data.num_pnts) {
+	num_pnts    = data.num_pnts;
+	num_layers  = data.num_layers;
+	num_nodes   = data.num_nodes;
+	lower_bound = data.lower_bound;
+	std::copy(&data.pnts[0],   &data.pnts[0]   + num_pnts, &pnts[0]);
+	std::copy(&data.layers[0], &data.layers[0] + num_pnts, &layers[0]);
+	std::copy(&data.nodes[0],  &data.nodes[0]  + num_pnts, &nodes[0]);
+	onionZero = data.onionZero;
+	ep = data.ep;
+}
+
+Data::Data(const Pnts &pntsVector) {
+	num_pnts = pntsVector.size();
+	pnts   = new pnt[num_pnts]();
+	layers = new loop[num_pnts]();
+	nodes  = new node[num_pnts]();
+	for(auto i=0; i < num_pnts; ++i) {
+		pnts[i] = pntsVector[i];
+	}
+}
+
+Data::Data(int size) {
+	if(size == 0) {
+		pnts   = new pnt[MAX]();
+		layers = new loop[MAX]();
+		nodes  = new node[MAX]();
+	} else {
+		pnts   = new pnt[size]();
+		layers = new loop[size]();
+		nodes  = new node[size]();
+	}
+}
+
+Data::~Data() {
+	delete[] pnts;
+	delete[] nodes;
+	delete[] layers;
+}
 
 void Data::backupOnionZero(int idx) {
 	auto l = layers[idx];
@@ -104,6 +79,14 @@ void Data::backupOnionZero(int idx) {
 	} while(nIt.vtx != startNode.vtx);
 }
 
+pnt Data::getInnerPnt() {
+	auto it = onionZero.begin();
+	auto Pa = pnts[*it];
+	++it; ++it;
+	auto Pb = pnts[*it];
+
+	return midpoint(&Pa, &Pb);
+}
 
 void Data::determineExtremPoints() {
 	auto minX = pnts[0].x;	auto maxX = pnts[0].x;
@@ -118,6 +101,13 @@ void Data::determineExtremPoints() {
 	}
 }
 
+OnionZero Data::getZeroWithOritinalID() {
+	OnionZero onion;
+	for(auto n : onionZero) {
+		onion.push_back(pnts[n].id);
+	}
+	return onion;
+}
 
 void Data::printPnts() const {
 	std::cout << "num_pnts = "    << num_pnts    << std::endl

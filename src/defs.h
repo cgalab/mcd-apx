@@ -1,9 +1,14 @@
 #ifndef MIN_CONVEX_DECOMP_H
 #define MIN_CONVEX_DECOMP_H
 
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+
 #include <iostream>
 #include <string>
-
+#include <vector>
 
 #define MAX  1000001
 #define NIL       -1
@@ -18,6 +23,8 @@ public:
    boolean in = false;            /* is in interior of CHs */
    friend std::ostream& operator<< (std::ostream& os, const pnt& p);
 };
+
+using Pnts = std::vector<pnt>;
 
 typedef struct {
    int nde;
@@ -51,6 +58,30 @@ public:
    int partition			= 1;
 };
 
+class pCmpX {
+public:
+  bool operator() (pnt a, pnt b) {
+	  if      (a.x < b.x)       return true;
+	    else if (a.x > b.x)     return false;
+	    else  {
+	       if      (a.y < b.y)  return true;
+	       else if (a.y > b.y)  return false;
+	       else                 return true;
+	    }
+  }
+};
+class pCmpY {
+public:
+  bool operator() (pnt a, pnt b) {
+	  if      (a.y < b.y)       return true;
+	    else if (a.y > b.y)     return false;
+	    else  {
+	       if      (a.x < b.x)  return true;
+	       else if (a.x > b.x)  return false;
+	       else                 return true;
+	    }
+  }
+};
 
 typedef enum {
    SUCCESS,

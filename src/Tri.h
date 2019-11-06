@@ -8,8 +8,11 @@
 #include <iostream>
 #include <random>
 
-#include "numerics.h"
+#include <string.h>
+
 #include "defs.h"
+#include "numerics.h"
+#include "data.h"
 
 /* interact with triangle */
 #ifdef __cplusplus
@@ -17,8 +20,6 @@ extern "C" {
 	#include "../triangle/triangle.h"
 }
 #endif
-
-#define ULMAX = MAX
 
 using Edge = std::array<pnt, 2>;
 
@@ -52,14 +53,14 @@ public:
 		if(i == a) {return c;}
 		if(i == b) {return a;}
 		if(i == c) {return b;}
-		return ULMAX;
+		return MAX;
 	}
 	long getCCWCorner(int i) const {
 		assert(i!=a && i!=b && i!=c);
 		if(i == a) {return b;}
 		if(i == b) {return c;}
 		if(i == c) {return a;}
-		return ULMAX;
+		return MAX;
 	}
 
 	void updateNeibhorFromTo(int nOld, int nNew) {
@@ -70,29 +71,14 @@ public:
 
 	bool isValid() { return a != b && b != c && a != c; }
 
+	void printObjFace() {std::cout << "f " << a+1 << " " << b+1 << " " << c+1 << std::endl;}
+
 	friend std::ostream& operator<<(std::ostream& os, const Triangle& dt);
 	friend bool operator==(const Triangle& a, const Triangle& b);
 	friend bool operator!=(const Triangle& a, const Triangle& b);
 };
 
-//class FlipElement {
-//public:
-//	FlipElement(const EdgeIterator eidx, const Exact area)
-//	: edgeIt(eidx)
-//	, areaChange(area) {}
-//
-//	EdgeIterator 	edgeIt;
-//	Exact			areaChange;
-//
-//	friend bool operator<(const FlipElement& lhs, const FlipElement& rhs);
-//};
-//
-//struct CompareFlipElement : public std::binary_function<FlipElement, FlipElement, bool> {
-//	bool operator()(const FlipElement& lhs, const FlipElement& rhs) const {
-//		return lhs.areaChange < rhs.areaChange;
-//	}
-//};
-
+using Triangles = std::vector<Triangle>;
 
 class Tri {
 public:
@@ -110,9 +96,7 @@ public:
 
 	~Tri() {delete triswitches; }
 
-	void runTriangle(Data& data);
-
-//	void aSingleFlip();
+	void runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions);
 
 	void resetForSortedFlipping();
 
@@ -132,76 +116,21 @@ public:
 	Triangle getNextCCWTriangleAroundVertex(const Triangle& tri, long vertex) const;
 	Triangle getNextCWTriangleAroundVertex(const Triangle& tri, long vertex) const;
 
-//	bool isTriOnBoundaryABAndReflexVertexC(const Triangle& tri) const;
-//	bool isTriIcidentOnReflexVertexAndBoundary(const Triangle& tri) const;
-//
-//	bool isFlippable(const Triangle& tri, long vertex) const;
-//	bool isInvertable(const Triangle& tri, long vertex) const;
-
-//	IndexEdge getBoundaryEdge(const Triangle& tri) const {
-//		if(data->hasEdge(tri.a,tri.b)) {
-//			return {{tri.a,tri.b}};
-//		}
-//		if(data->hasEdge(tri.b,tri.c)) {
-//			return {{tri.b,tri.c}};
-//		}
-//		if(data->hasEdge(tri.c,tri.a)) {
-//			return {{tri.c,tri.a}};
-//		}
-//		assert(false);
-//		return IndexEdge();
-//	}
-
-//	bool triLiesOnReflexVertex(const ul& idx) const {
-//		return triLiesOnReflexVertex(getTriangle(idx));
-//	}
-
-//	bool triOnBoundary(const Triangle& tri) const {
-//		return  data->hasEdge(tri.a,tri.b)
-//			 || data->hasEdge(tri.b,tri.c)
-//			 || data->hasEdge(tri.c,tri.a);
-//	}
-
-//	int getReflexIndex(const Triangle& tri) const {
-//		assert(triLiesOnReflexVertex(tri));
-//		if(data->isReflexVertex(tri.a)) {
-//			return tri.a;
-//		} else if(data->isReflexVertex(tri.b)) {
-//			return tri.b;
-//		} else {
-//			return tri.c;
-//		}
-//	}
 
 	bool hasCorner(const Triangle& tri, const int a) const {
 		return tri.a == a || tri.b == a || tri.c == a;
 	}
 
-//	void updateModifiedCorner(const EdgeIterator edgeIt);
-//	void updateModifiedCorners(const EdgeIterator twoIncident, const EdgeIterator nextThree);
-
 	bool isOnVertices(const Triangle& tri, const int a, const int b, const int c) const {
 		return hasCorner(tri,a) &&  hasCorner(tri,b) && hasCorner(tri,c);
 	}
 
-//	std::vector<Edge> getTriangleEdgesNotOnInput(int idx) const {
-//		Triangle t = getTriangle(idx);
-//		Edge a{getPoint(t.a), getPoint(t.b)};
-//		Edge b{getPoint(t.b), getPoint(t.c)};
-//		Edge c{getPoint(t.c), getPoint(t.a)};
-//
-//		std::vector<Edge> ar;
-//		if(!data->hasEdge(t.a,t.b)) {ar.push_back(a);}
-//		if(!data->hasEdge(t.b,t.c)) {ar.push_back(b);}
-//		if(!data->hasEdge(t.c,t.a)) {ar.push_back(c);}
-//		return ar;
-//	}
 
 	std::array<Edge,3> getTriangleEdges(int idx) const {
 		Triangle t = getTriangle(idx);
-		Edge a{getPoint(t.a), getPoint(t.b)};
-		Edge b{getPoint(t.b), getPoint(t.c)};
-		Edge c{getPoint(t.c), getPoint(t.a)};
+		Edge a{{P(t.a), P(t.b)}};
+		Edge b{{P(t.b), P(t.c)}};
+		Edge c{{P(t.c), P(t.a)}};
 		return {{a,b,c}};
 	}
 
@@ -211,16 +140,12 @@ public:
 
 		pnt a{tOUT.pointlist[PaIdx], tOUT.pointlist[PaIdx+1], PaIdx, false};
 		pnt b{tOUT.pointlist[PbIdx], tOUT.pointlist[PbIdx+1], PbIdx, false};
-		return Edge(a,b);
+		return Edge{{a,b}};
 	}
 
 	pnt P(int idx) const {
 		return pnt{tOUT.pointlist[idx*2], tOUT.pointlist[idx*2 + 1],idx*2,false};
 	}
-
-//	int vA(const EdgeIterator it) const {return (*it)[0];}
-//	int vB(const EdgeIterator it) const {return (*it)[1];}
-//	Point p(const int idx) const {return data->v(idx);}
 
 	const triangulateio* getTriangleData() const { return &tOUT; }
 
@@ -253,12 +178,13 @@ public:
 	void printTriangles() const;
 	void printEdges() const;
 
+	Triangles triangles;
+
 private:
-	void filltriangulateioIn(Data& data, triangulateio& tri);
-	void inittriangulateioOut(Data& data, triangulateio& tri);
+	void filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, triangulateio& tri);
+	void inittriangulateioOut(pnt* pnts, int num_pnts, const Onions& onions, triangulateio& tri);
 
 	triangulateio triangleIN, tOUT, vorout;
-	Data* data = nullptr;
 	rt_options* rt_opt = nullptr;
 
 	char *triswitches;

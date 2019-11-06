@@ -17,7 +17,7 @@
 /*                                                                           */
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <assert.h>
 /*                                                                           */
 /* get my header files                                                       */
 /*                                                                           */
@@ -78,6 +78,7 @@ void GetCCWmostVertexInHalfplane(int j1, int j2, int i_start, int *i2,
 void GetCWmostVertexInHalfplane(int i1, int i2, int *i3, node *nodes, 
                                 pnt *pnts)
 {
+
    if (CW(&(pnts[i1]), &(pnts[i2]), &(pnts[*i3]))) {
       do {
          /*                                                                  */
@@ -484,7 +485,7 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
 }
 
 
-void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
+void ComputeApproxDecomp(Data *data, FILE *output, pnt *pnts, int num_pnts,
                          loop *layers, node *nodes,
                          boolean randomized, boolean obj,
 						 rt_options &rt_opt)
@@ -502,7 +503,7 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
    /* initialize the onion nodes                                             */
    /*                                                                        */
    for (i = 0;  i < num_pnts;  ++i)  {
-      nodes[i].vtx  = NIL;
+      nodes[i].vtx  = i;
       nodes[i].prev = NIL;
       nodes[i].next = NIL;
    }
@@ -527,6 +528,11 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
           num_CH_computations, num_ch_vtx, num_vtx);
    */
    StoreAsOnionLayer(ch_vtx, num_ch_vtx, layers, 0, vtx, nodes, randomized);
+
+   if(rt_opt.partition > 1) {
+	   data->backupOnionZero();
+   }
+
    ++num_CH_computations;
    inner_pnts_left = ExtractInnerPoints(vtx, &num_vtx, ch_vtx, num_ch_vtx);
 
@@ -579,6 +585,7 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
 	   printf("apx ratio:     %5.3f\n", ((double) num_cvx_areas) /
 			   ((double) lower_bound));
    }
+
    free(vtx);
    free(ch_vtx);
    free(convex);

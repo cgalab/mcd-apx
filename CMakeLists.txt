@@ -1,5 +1,7 @@
-cmake_minimum_required (VERSION 2.6)
 project (min_convex_decomp)
+cmake_minimum_required (VERSION 2.6)
+#project (min_convex_decomp VERSION "1.99" DESCRIPTION "min_convex_decomp")
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,4 +37,7 @@ set(PACKAGE_VERSION 1.0)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 # More verbose output by make
 set(CMAKE_VERBOSE_MAKEFILE "OFF")
-add_subdirectory(src)
+
+
+#add_subdirectory(triangle src)
+subdirs (triangle src)

@@ -1,4 +1,6 @@
-project (mcd-apx VERSION "1.99" DESCRIPTION "mcd-apx")
+#project (min_convex_decomp VERSION "1.99" DESCRIPTION "min_convex_decomp")
+cmake_minimum_required(VERSION 2.8)
+project (min_convex_decomp)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 

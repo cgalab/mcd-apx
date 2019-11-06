@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
-
 project (min_convex_decomp)
 
 set( min_convex_decomp_SRC
-	io.cc arg_eval.cc onion.cc decomp.cc defs.cpp data.cpp
+	io.cc arg_eval.cc onion.cc decomp.cc defs.cpp broker.cpp data.cpp Tri.cpp
 )
 
 include(CheckFunctionExists) 
@@ -15,7 +14,9 @@ if( NOT HAVE_RANDOM )
 endif( NOT HAVE_RANDOM )
 
 add_executable(mcd_apx main.cc ${min_convex_decomp_SRC}) 
-target_link_libraries(mcd_apx ${min_convex_decomp_LIBS})
+target_link_libraries(mcd_apx ${min_convex_decomp_LIBS} trianglelib)
+
+target_include_directories(mcd_apx PRIVATE ../triangle)
 
 
 get_directory_property( DirDefs COMPILE_DEFINITIONS ) 

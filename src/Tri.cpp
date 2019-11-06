@@ -1,3 +1,4 @@
+#include <algorithm>    // std::for_each
 
 #include "Tri.h"
 
@@ -9,16 +10,19 @@ bool operator==(const Triangle& a, const Triangle& b) {return a.id == b.id;}
 bool operator!=(const Triangle& a, const Triangle& b) {return a.id != b.id;}
 
 
-void Tri::runTriangle(Data& data) {
-	this->data = &data;
+void Tri::runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions) {
 
 	/* init/fill the triangle structure with data */
-	filltriangulateioIn( data,triangleIN);
-	inittriangulateioOut(data,tOUT 	    );
+	filltriangulateioIn( pnts,num_pnts,holePnts,onions,triangleIN);
+	inittriangulateioOut(pnts,num_pnts,onions,tOUT 	    );
 
 	/* triangulate */
 	triangulate(triswitches,&triangleIN,&tOUT,&vorout);
 	triangulationDone = true;
+
+	for(int i = 0; i < tOUT.numberoftriangles; ++i) {
+		triangles.push_back(getTriangle(i));
+	}
 }
 
 
@@ -62,7 +66,9 @@ bool Tri::isConvexQuad(const Triangle& ta, const Triangle& tb) const {
 	auto cp = getCommonPair(ta,tb);
 	long taM = getMissingCorner(ta,cp[0],cp[1]);
 	long tbM = getMissingCorner(tb,cp[0],cp[1]);
-	return CCW(&P(taM),&P(cp[0]),&P(tbM)) && CCW(&P(tbM),&P(cp[1]),&P(taM));
+	auto Pa = P(taM); auto Pb = P(tbM);
+	auto Pc1 = P(cp[0]); auto Pc2 = P(cp[1]);
+	return CCW(&Pa,&Pc1,&Pb) && CCW(&Pb,&Pc2,&Pa);
 }
 
 void Tri::writeBack(const Triangle& tri) {
@@ -82,7 +88,9 @@ std::array<long,2> Tri::getCommonPair(const Triangle& ta, const Triangle& tb) co
 	if(hasCorner(ta,tb.a)) {vect.push_back(tb.a);}
 	assert(vect.size() == 2);
 
-	if(!CCW(&P(vect[0]),&P(vect[1]),&P(getMissingCorner(ta,vect[0],vect[1])) ) ) {
+	auto Pv0 = P(vect[0]); auto Pv1 = P(vect[1]);
+	auto Pv2 = P(getMissingCorner(ta,vect[0],vect[1]));
+	if(!CCW(&Pv0,&Pv1,&Pv2) ) {
 		std::swap(vect[0],vect[1]);
 	}
 
@@ -115,44 +123,55 @@ Triangle Tri::getNextCWTriangleAroundVertex(const Triangle& tri, long vertex) co
 	return Triangle();
 }
 
-//bool Tri::isTriOnBoundaryABAndReflexVertexC(const Triangle& tri) const {
-//	if((data->hasEdge(tri.a,tri.b) && data->isReflexVertex(tri.c)) ||
-//	   (data->hasEdge(tri.b,tri.c) && data->isReflexVertex(tri.a)) ||
-//	   (data->hasEdge(tri.c,tri.a) && data->isReflexVertex(tri.b))
-//	) {
-//		return true;
-//	}
-//	return false;
-//}
-//
-//bool Tri::isTriIcidentOnReflexVertexAndBoundary(const Triangle& tri) const {
-//	if((data->hasEdge(tri.a,tri.b) && (data->isReflexVertex(tri.a) || data->isReflexVertex(tri.b) ) ) ||
-//  	   (data->hasEdge(tri.b,tri.c) && (data->isReflexVertex(tri.b) || data->isReflexVertex(tri.c) ) ) ||
-//  	   (data->hasEdge(tri.c,tri.a) && (data->isReflexVertex(tri.c) || data->isReflexVertex(tri.a) ) )
-//	) {
-//		return true;
-//	}
-//	return false;
-//}
-
-void Tri::filltriangulateioIn(Data& data, triangulateio& tri) {
-	auto& vertices 		= data.pnts;
-	auto  num_vertices  = data.num_pnts;
-	auto& polygon  		= data.onionZero;
-
-	tri.numberofpoints	= num_vertices;
+void Tri::filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, triangulateio& tri) {
+	tri.numberofpoints	= num_pnts;
 	tri.pointlist    	= new double[tri.numberofpoints * 2];
 	tri.pointmarkerlist = new int[tri.numberofpoints];
 
-	for(long i = 0; i < num_vertices; ++i) {
-		tri.pointlist[2*i]     = vertices[i].x();
-		tri.pointlist[2*i + 1] = vertices[i].y();
+	int polygonSize = 0;
+	std::for_each(onions.begin(),onions.end(),[&](OnionZero o){polygonSize+=o.size();});
+
+	for(long i = 0; i < num_pnts; ++i) {
+		tri.pointlist[2*i]     = pnts[i].x;
+		tri.pointlist[2*i + 1] = pnts[i].y;
 		/* one is default for CH boundary vertices */
 		tri.pointmarkerlist[i] = i+2;
 	}
 
-	tri.numberofholes 			= 0;
-	tri.holelist				= NULL;
+//	tri.numberofholes 			= 0;
+//	tri.holelist				= NULL;
+//	tri.numberofregions			= 0;
+//	tri.regionlist				= NULL;
+//	tri.numberofcorners			= 3;
+//
+//	tri.numberofpointattributes = 0;
+//	tri.pointattributelist 		= NULL;
+//
+//	tri.numberofsegments = polygonSize;
+//	tri.segmentlist = new int[tri.numberofsegments * 2];
+//	tri.segmentmarkerlist = new int[tri.numberofsegments];
+//
+//	int segCnt = 0;
+//	for(auto& onion : onions) {
+//		auto it = onion.begin();
+//		do {
+//			tri.segmentlist[2*segCnt]     = *it;
+//			++it;
+//			if(it == onion.end()) {it = onion.begin();}
+//			tri.segmentlist[2*segCnt + 1] = *it;
+//			tri.segmentmarkerlist[segCnt] = segCnt+2;
+//
+//			++segCnt;
+//		} while(it != onion.begin());
+//	}
+
+	tri.numberofholes 			= holePnts.size();
+	tri.holelist				= new double[tri.numberofholes * 2];
+	for(long i = 0; i < tri.numberofholes; ++i) {
+		tri.holelist[2*i]     = holePnts[i].x;
+		tri.holelist[2*i + 1] = holePnts[i].y;
+	}
+
 	tri.numberofregions			= 0;
 	tri.regionlist				= NULL;
 	tri.numberofcorners			= 3;
@@ -160,38 +179,57 @@ void Tri::filltriangulateioIn(Data& data, triangulateio& tri) {
 	tri.numberofpointattributes = 0;
 	tri.pointattributelist 		= NULL;
 
-	tri.numberofsegments = polygon.size();
+	tri.numberofsegments = polygonSize;
 	tri.segmentlist = new int[tri.numberofsegments * 2];
 	tri.segmentmarkerlist = new int[tri.numberofsegments];
-	for(long i = 0; i < polygon.size(); ++i) {
-		tri.segmentlist[2*i]     = polygon[i];
-		tri.segmentlist[2*i + 1] = polygon[(i+1)%polygon.size()];
 
-		/* one is default for CH boundary segments */
-		tri.segmentmarkerlist[i] = i+2;
+	int segCnt = 0;
+	for(auto& onion : onions) {
+		auto it = onion.begin();
+		do {
+			tri.segmentlist[2*segCnt] = *it;
+			++it;
+			if(it == onion.end()) {it = onion.begin();}
+			tri.segmentlist[2*segCnt + 1] = *it;
+			tri.segmentmarkerlist[segCnt] = segCnt+2;
+
+			++segCnt;
+		} while(it != onion.begin());
 	}
+
+//	auto it = polygon.begin();
+//	for(long i = 0; i < polygon.size(); ++i) {
+//		tri.segmentlist[2*i]     = *it;
+//		++it;
+//		if(it == polygon.end()) {it = polygon.begin();}
+//		tri.segmentlist[2*i + 1] = *it;
+//
+//		/* one is default for CH boundary segments */
+//		tri.segmentmarkerlist[i] = i+2;
+//	}
 }
 
-void Tri::inittriangulateioOut(Data& data, triangulateio& tri) {
-	auto& vertices   	  = data.pnts;
-	tri.numberofpoints	  = data.num_pnts;
-	tri.pointlist    	  = NULL; //new double[tri.numberofpoints * 2];
-	tri.pointmarkerlist   = NULL; //new int[tri.numberofpoints];
+void Tri::inittriangulateioOut(pnt* pnts, int num_pnts, const Onions& onions, triangulateio& tri) {
+	tri.numberofpoints	  = num_pnts;
+	tri.pointlist    	  = NULL;
+	tri.pointmarkerlist   = NULL;
 
-	assert(data.num_pnts > 2);
-	tri.numberoftriangles = data.num_pnts - 2;
-	tri.trianglelist 	  = NULL; //new int[tri.numberoftriangles * 3];
-	tri.neighborlist 	  = NULL; //new int[tri.numberoftriangles * 3];
+	assert(num_pnts > 2);
+	tri.numberoftriangles = num_pnts - 2;
+	tri.trianglelist 	  = NULL;
+	tri.neighborlist 	  = NULL;
 	tri.numberofcorners	  = 3;
 
-	tri.numberofedges 	  = 2 * data.num_pnts - 2;
-	tri.edgelist 		  = NULL; //new int[tri.numberofedges * 2];
-	tri.edgemarkerlist 	  = NULL; //new int[tri.numberofedges];
+	tri.numberofedges 	  = 2 * num_pnts - 2;
+	tri.edgelist 		  = NULL;
+	tri.edgemarkerlist 	  = NULL;
 
-	auto& polygon  	 	  = data.onionZero;
-	tri.numberofsegments  = polygon.size();
-	tri.segmentlist 	  = NULL; //new int[tri.numberofsegments * 2];
-	tri.segmentmarkerlist = NULL; //new int[tri.numberofsegments];
+	int polygonSize = 0;
+	std::for_each(onions.begin(),onions.end(),[&](OnionZero o){polygonSize+=o.size();});
+
+	tri.numberofsegments  = polygonSize;
+	tri.segmentlist 	  = NULL;
+	tri.segmentmarkerlist = NULL;
 }
 
 
@@ -213,8 +251,8 @@ void Tri::printEdges() const {
 
 	std::cout << std::endl;
 	for (long i = 0; i < (long)tOUT.numberofedges; ++i) {
-		Edge e = getEdge(i);
-		std::cout << e << " / ";
+//		Edge e = getEdge(i);
+//		std::cout << e << " / ";
 	}
 	std::cout << std::endl;
 }

@@ -18,6 +18,10 @@
 #include <list>
 #include "data.h"
 
+int p_comp(const void *, const void *);
+int p_comp_y(const void *, const void *);
+bool p_comp_y(pnt a, pnt b);
+
 void ArgEval(int argc, char *argv[], rt_options *rt_opt);
 
 FILE *OpenFile(const char *file_name, const char *access);
@@ -52,7 +56,7 @@ void GetCCWmostVertexInHalfplane(int i1, int i2, int i_start, int *i3,
 void GetVerticesInHalfplane(int i1, int i2, int *o3, int *o4, node *nodes, 
                             pnt *pnts);
 
-void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
+void ComputeApproxDecomp(Data *data, FILE *output, pnt *pnts, int num_pnts,
                          loop *layers, node *nodes,
                          boolean randomized, boolean obj,
 						 rt_options &rt_opt);

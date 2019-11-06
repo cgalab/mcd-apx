@@ -33,10 +33,9 @@
 /*                                                                           */
 
 #include "defs.h"
-#include "data.h"
+#include "broker.h"
 #include "headers.h"
 
-int p_comp(const void *, const void *);
 
 
 int main(int argc, char *argv[])
@@ -92,6 +91,8 @@ int main(int argc, char *argv[])
 
     	  /* split into 'rt_opt.partition' point sets */
     	  data.partition(rt_opt.partition);
+
+//    	  data.printSets();
 
     	  /* compute onions of each set */
     	  for(auto& s : data.sets) {
@@ -179,16 +180,9 @@ void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
 		/* compute onion layers                                             */
 		/*                                                                  */
 		OnionLayers(data->pnts, data->num_pnts, data->layers, &data->num_layers, data->nodes, &data->num_nodes);
-
 		/*                                                                  */
 		/* output layers                                                    */
 		/*                                                                  */
-		/*
-	         output = OpenFile(rt_opt.output_file, "w");
-	         WriteLayers(output, pnts, layers, num_layers, nodes);
-	         fclose(output);
-	         exit(1);
-		 */
 
 		/*                                                                  */
 		/* compute lower bound                                              */
@@ -211,7 +205,7 @@ void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
 		/*                                                                  */
 		/* compute approximate minimum decomposition (Knauer&Spillner)      */
 		/*                                                                  */
-		ComputeApproxDecomp(output, data->pnts, data->num_pnts, data->layers, data->nodes,
+		ComputeApproxDecomp(data, output, data->pnts, data->num_pnts, data->layers, data->nodes,
 				rt_opt.randomized, rt_opt.obj, rt_opt);
 	}
 
@@ -230,6 +224,28 @@ int p_comp(const void *a, const void *b)
       if      (((pnt*)a)->y < ((pnt*)b)->y)  return -1;
       else if (((pnt*)a)->y > ((pnt*)b)->y)  return  1;
       else                                   return  0;
+   }
+}
+
+int p_comp_y(const void *a, const void *b)
+{
+   if      (((pnt*)a)->y < ((pnt*)b)->y)     return -1;
+   else if (((pnt*)a)->y > ((pnt*)b)->y)     return  1;
+   else  {
+      if      (((pnt*)a)->x < ((pnt*)b)->x)  return -1;
+      else if (((pnt*)a)->x > ((pnt*)b)->x)  return  1;
+      else                                   return  0;
+   }
+}
+
+bool p_comp_y(pnt a, pnt b)
+{
+   if      (a.y < b.y)     return false;
+   else if (a.y > b.y)     return true;
+   else  {
+      if      (a.x < b.x)  return false;
+      else if (a.x > b.x)  return true;
+      else                 return true;
    }
 }
 
