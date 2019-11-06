@@ -26,7 +26,7 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt);
 
 FILE *OpenFile(const char *file_name, const char *access);
 
-void initRand();
+void initRand(rt_options *rt_opt);
 
 void ReadInput(FILE *file, pnt *pnts, int *num_pnt);
 

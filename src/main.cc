@@ -55,8 +55,12 @@ int main(int argc, char *argv[])
          /*                                                                  */
          /* prepare for randomized cutting of convex areas                   */
          /*                                                                  */
-         if (rt_opt.seed != NIL) { srand48(rt_opt.seed); }
-         else { initRand(); }
+         if (rt_opt.seed == NIL) {
+        	 initRand(&rt_opt);
+         }
+         printf("random_seed: %ld\n", rt_opt.seed);
+         fflush(stdout);
+         srand48(rt_opt.seed);
       }
 
       data.cfg = &rt_opt;
@@ -111,6 +115,17 @@ int main(int argc, char *argv[])
     	  /************************************************************/
     	  StartComputation(&data,rt_opt,output);
       }
+
+      /* print stats for wrapper */
+      int cvx_faces = 0;
+      cvx_faces += data.tri.triangles.size();
+      for(auto& s : data.sets) {
+    	  cvx_faces += s.num_cvx_areas;
+      }
+      std::cout << "num_cvx_areas: " << cvx_faces << std::endl;
+      fflush(stdout);
+
+
       FreeHulls();
       fclose(output);
 //   }
@@ -249,7 +264,7 @@ bool p_comp_y(pnt a, pnt b)
    }
 }
 
-void initRand() {
+void initRand(rt_options *rt_opt) {
 	long rseed;
 	int need = sizeof(rseed);
 #define RND_SOURCE "/dev/urandom"
@@ -268,5 +283,5 @@ void initRand() {
 	}
 	close(fd);
 	/* fprintf(stderr, "Seeding with %lx\n", rseed); */
-	srand48(rseed);
+	rt_opt->seed = rseed;
 }

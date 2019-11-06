@@ -40,9 +40,10 @@ public:
 
 	bool fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *d);
 
+	Tri tri;
+
 private:
 	Onions allZeroOnions;
-	Tri tri;
 };
 
 #endif

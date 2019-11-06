@@ -43,7 +43,7 @@ class rt_options {
 public:
    boolean verbose         	= false;
    boolean index		   	= false;
-   int seed				   	= NIL;
+   long seed				= NIL;
    int counter				= 1;
    int timeout				= 0;
    std::string input_file   = "";

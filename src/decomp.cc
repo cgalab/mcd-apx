@@ -579,7 +579,7 @@ void ComputeApproxDecomp(Data *data, FILE *output, pnt *pnts, int num_pnts,
 
    if (num_CH_computations == 1) {lower_bound = 1;}
 
-   data->setStats(lower_bound,num_ch_vtx);
+   data->setStats(lower_bound,num_cvx_areas);
 
    if(rt_opt.verbose) {
 	   printf("#(CH computs): %d\n", num_CH_computations);
