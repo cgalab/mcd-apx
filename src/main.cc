@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
    int err = 0;
    FILE *input = nullptr, *output = nullptr;
 
-   try {
+//   try {
       /*                                                                     */
       /* parse command-line arguments                                        */
       /*                                                                     */
@@ -113,62 +113,62 @@ int main(int argc, char *argv[])
       }
       FreeHulls();
       fclose(output);
-   }
-   catch (errordef PolyAreaErrorCode) {
-	  err = 1;
-      switch (PolyAreaErrorCode) {
-      case SUCCESS: 
-         break;
-      case CL_ARG_ERROR:
-         fprintf(stderr, 
-                 "\n*** exception: incorrect command-line arguments ***\n");
-         break;
-      case MEM_ALLOC_FAILED:
-         fprintf(stderr, 
-                 "\n*** exception: memory (re-)allocation failed ***\n");
-         break;
-      case FILE_ACCESS_FAILED: 
-         fprintf(stderr, 
-                 "\n*** exception: I/O file could not be opened ***\n");
-         break;
-      case INSUFFICENT_INPUT:
-         fprintf(stderr, 
-                 "\n*** exception: less than three input vertices ***\n");
-         break;
-      case EOF_ENCOUNTERED:
-         fprintf(stderr, 
-                 "\n*** exception: end-of-file encountered during file input ***\n");
-         break;
-      case INDEX_MISMATCH:
-         fprintf(stderr, 
-                 "\n*** exception: index mismatch during file input ***\n");
-         break;
-      case LINK_MISMATCH:
-         fprintf(stderr, 
-                 "\n*** exception: link mismatch in 2-Opt ***\n");
-         break;
-      case NUMBER_MISMATCH:
-         fprintf(stderr, 
-                 "\n*** exception: numbers of CH and inner vertices do not add up ***\n");
-         break;
-      case LIST_MESSED_UP:
-         fprintf(stderr, 
-                 "\n*** exception: circular list is messed up ***\n");
-         break;
-      case CH_MESSED_UP:
-         fprintf(stderr, 
-                 "\n*** exception: convex hull is messed up ***\n");
-         break;
-      case ONION_MESSED_UP:
-         fprintf(stderr, 
-                 "\n*** exception: onion layers are messed up ***\n");
-         break;
-      case UNKNOWN_ERROR:
-         fprintf(stderr, 
-                 "\n*** exception: unknown error code ***\n");
-         break;
-      }
-   }
+//   }
+//   catch (errordef PolyAreaErrorCode) {
+//	  err = 1;
+//      switch (PolyAreaErrorCode) {
+//      case SUCCESS:
+//         break;
+//      case CL_ARG_ERROR:
+//         fprintf(stderr,
+//                 "\n*** exception: incorrect command-line arguments ***\n");
+//         break;
+//      case MEM_ALLOC_FAILED:
+//         fprintf(stderr,
+//                 "\n*** exception: memory (re-)allocation failed ***\n");
+//         break;
+//      case FILE_ACCESS_FAILED:
+//         fprintf(stderr,
+//                 "\n*** exception: I/O file could not be opened ***\n");
+//         break;
+//      case INSUFFICENT_INPUT:
+//         fprintf(stderr,
+//                 "\n*** exception: less than three input vertices ***\n");
+//         break;
+//      case EOF_ENCOUNTERED:
+//         fprintf(stderr,
+//                 "\n*** exception: end-of-file encountered during file input ***\n");
+//         break;
+//      case INDEX_MISMATCH:
+//         fprintf(stderr,
+//                 "\n*** exception: index mismatch during file input ***\n");
+//         break;
+//      case LINK_MISMATCH:
+//         fprintf(stderr,
+//                 "\n*** exception: link mismatch in 2-Opt ***\n");
+//         break;
+//      case NUMBER_MISMATCH:
+//         fprintf(stderr,
+//                 "\n*** exception: numbers of CH and inner vertices do not add up ***\n");
+//         break;
+//      case LIST_MESSED_UP:
+//         fprintf(stderr,
+//                 "\n*** exception: circular list is messed up ***\n");
+//         break;
+//      case CH_MESSED_UP:
+//         fprintf(stderr,
+//                 "\n*** exception: convex hull is messed up ***\n");
+//         break;
+//      case ONION_MESSED_UP:
+//         fprintf(stderr,
+//                 "\n*** exception: onion layers are messed up ***\n");
+//         break;
+//      case UNKNOWN_ERROR:
+//         fprintf(stderr,
+//                 "\n*** exception: unknown error code ***\n");
+//         break;
+//      }
+//   }
 
    exit(err);
 }
@@ -197,7 +197,7 @@ void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
 		/*                                                                  */
 		/* compute approximate minimum decomposition (based on onions)      */
 		/*                                                                  */
-		ComputeApproxDecompOnion(output, data->pnts, data->num_pnts, data->layers, data->num_layers,
+		ComputeApproxDecompOnion(data,output, data->pnts, data->num_pnts, data->layers, data->num_layers,
 				data->nodes, data->lower_bound, rt_opt.obj, rt_opt);
 	}
 

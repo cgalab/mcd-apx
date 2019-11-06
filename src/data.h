@@ -40,6 +40,9 @@ public:
 	int num_nodes   = 0;
 	int lower_bound = 0;
 
+	int num_cvx_areas 		= NIL;
+	double apx_ratio 		= 0.0;
+
 	void printPnts() const;
 	void printLayer() const;
 
@@ -54,6 +57,13 @@ public:
 	node *nodes;
 
 	ExtremPnts ep;
+
+	void setStats(int lb, int numcvx) {
+		lower_bound = lb;
+		num_cvx_areas = numcvx;
+		apx_ratio = (double)num_cvx_areas / (double)lower_bound;
+	}
+
 
 	OnionZero onionZero;
 

@@ -61,7 +61,7 @@ void ComputeApproxDecomp(Data *data, FILE *output, pnt *pnts, int num_pnts,
                          boolean randomized, boolean obj,
 						 rt_options &rt_opt);
 
-void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
+void ComputeApproxDecompOnion(Data *data, FILE *output, pnt *pnts, int num_pnts,
                               loop *layers, int num_layers, node *nodes,
                               int lower_bound, boolean obj, rt_options &rt_opt);
 

@@ -578,6 +578,9 @@ void ComputeApproxDecomp(Data *data, FILE *output, pnt *pnts, int num_pnts,
    ++num_cvx_areas;
 
    if (num_CH_computations == 1) {lower_bound = 1;}
+
+   data->setStats(lower_bound,num_ch_vtx);
+
    if(rt_opt.verbose) {
 	   printf("#(CH computs): %d\n", num_CH_computations);
 	   printf("lower bound:   %d\n", lower_bound);
@@ -826,7 +829,7 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
 }
 
 
-void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
+void ComputeApproxDecompOnion(Data *data, FILE *output, pnt *pnts, int num_pnts,
                               loop *layers, int num_layers, node *nodes,
                               int lower_bound, boolean obj, rt_options &rt_opt)
 {
@@ -864,7 +867,8 @@ void ComputeApproxDecompOnion(FILE *output, pnt *pnts, int num_pnts,
    */
 
    WriteOneLayer(output, pnts, layers, id, nodes, obj);
-   ++num_cvx_areas;
+
+   data->setStats(lower_bound,num_cvx_areas);
 
    if(rt_opt.verbose) {
 	   printf("lower bound:   %d\n", lower_bound);
