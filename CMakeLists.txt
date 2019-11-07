@@ -1,12 +1,11 @@
 project (min_convex_decomp)
 cmake_minimum_required (VERSION 2.6)
-#project (min_convex_decomp VERSION "1.99" DESCRIPTION "min_convex_decomp")
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+project (min_convex_decomp)
 
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_STANDARD 17)
 
+# warning flags for the C++ compiler
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall" )
 
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -W -Wfloat-equal -Wundef -Wpointer-arith" )
@@ -20,11 +19,6 @@ set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Waddress -Wmissing-noreturn -Wstrict-
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wextra -Warray-bounds" )
 set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -pedantic" )
 
-if (POLICY CMP0077)
-  cmake_policy(SET CMP0077 NEW)
-endif ()
-
-
 if( WITH_DEBUGSYMBOLS )
    message("Adding debugging symbols")
    set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -g3 -gdwarf-2")
@@ -37,7 +31,5 @@ set(PACKAGE_VERSION 1.0)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 # More verbose output by make
 set(CMAKE_VERBOSE_MAKEFILE "OFF")
-
-
 #add_subdirectory(triangle src)
 subdirs (triangle src)

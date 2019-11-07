@@ -53,13 +53,12 @@ static struct option long_options[] = {
 };
 
 [[noreturn]]
- static void
- usage(const char *progname, int err) {
+static void
+usage(const char *progname, int err) {
 	FILE *f = err ? stderr : stdout;
 
-	fprintf(f,"Usage: %s [options] <input file>\n", progname);
-	fprintf(f,"  Options: --output  \t| --o <filename> \t write output\n");
-	fprintf(f,"           --input   \t| --i <file>\t\t (option) since the input can also be simple added as last parameter\n");
+	fprintf(f,"Usage: %s [options] <input file> <output file>\n", progname);
+	fprintf(f,"  Options:\n");
 	fprintf(f,"           --obj     \t| --w \t\t\t write output in wavefront obj format\n");
 	fprintf(f,"           --onion   \t| --O \t\t\t use onion approach\n");
 	fprintf(f,"           --seed    \t| --s NUM\t\t define fixed seed for random approach\n");
@@ -70,6 +69,8 @@ static struct option long_options[] = {
 	fprintf(f,"           --verbose \t| --v \t\t\t print processing information\n");
 	fprintf(f,"           --timings \t| --t \t\t\t print timings [ms]\n");
 	fprintf(f,"           --partition \t| --p NUM\t\t partition into NUM sets and merge\n");
+	fprintf(f,"    For legacy reasons, instead of passing as arguments, input and output\n");
+	fprintf(f,"    files can also be specified using --input/--output.\n");
 	fprintf(f,"\n");
 	fprintf(f,"Input format is a list of coordinates, one pair of x y in each line.\n");
 	fprintf(f,"\n");
@@ -109,7 +110,7 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 			break;
 
 		case 's':
-			rt_opt->seed = atoi(optarg);
+			rt_opt->seed = atol(optarg);
 			break;
 
 		case 'c':
@@ -148,18 +149,19 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 		}
 	}
 
-	if(rt_opt->input_file != "") {return;}
-
-	if (argc - optind > 1) {usage(argv[0], 1);}
-
-	rt_opt->use_stdin = true;
-	if (argc - optind == 1) {
-		std::string fn(argv[optind]);
-		if (fn != "-") {
-			rt_opt->input_file = fn;
-			rt_opt->use_stdin = false;
-		}
+	if (rt_opt->input_file == "") {
+		if (argc - optind <= 0) usage(argv[0], 1);
+		rt_opt->input_file = std::string(argv[optind]);
+		++optind;
 	}
 
-   return;
+	if (rt_opt->output_file == "") {
+		if (argc - optind <= 0) usage(argv[0], 1);
+		rt_opt->output_file = std::string(argv[optind]);
+		++optind;
+	}
+
+	if (argc - optind > 0) {usage(argv[0], 1);}
+
+	return;
 }

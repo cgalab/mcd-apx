@@ -33,55 +33,55 @@ int* lhull = (int*) malloc(MAX * sizeof(int));
 
 void ConvexHull(pnt *vtx, int num_vtx, int *ch_vtx, int *num_ch_vtx)
 {
-	int i, k, uk, lk;
+   int i, k, uk, lk;
 
-	if (num_vtx <= 2) {
-		ch_vtx[0] = 0;
-		if (num_vtx == 2) ch_vtx[1] = 1;
-		*num_ch_vtx = num_vtx;
-	}
-	else {
+   if (num_vtx <= 2) {
+      ch_vtx[0] = 0;
+      if (num_vtx == 2) ch_vtx[1] = 1;
+      *num_ch_vtx = num_vtx;
+   }
+   else {
+      
+      /* lower hull */
+      k = 0;
+      for (i = 0;  i < num_vtx;  ++i) {
+         while (k >= 2 && 
+                !CCW(&(vtx[lhull[k-2]]), &(vtx[lhull[k-1]]), &(vtx[i]))) --k;
+         lhull[k++] = i;
+      }
+      lk = k;
+      
+      /* upper hull */
+      if (lk < num_vtx) {
+         k = 0;
+         for (i = 0;  i < num_vtx;  ++i) {
+            while (k >= 2 && 
+                   !CW(&(vtx[uhull[k-2]]), &(vtx[uhull[k-1]]), &(vtx[i]))) --k;
+            uhull[k++] = i;
+         }
+         uk = k - 2;
+      }
+      else {
+         /*                                                                  */
+         /* all points are collinear                                         */
+         /*                                                                  */
+         uk = 0;
+      }
 
-		/* lower hull */
-		k = 0;
-		for (i = 0;  i < num_vtx;  ++i) {
-			while (k >= 2 &&
-					!CCW(&(vtx[lhull[k-2]]), &(vtx[lhull[k-1]]), &(vtx[i]))) --k;
-			lhull[k++] = i;
-		}
-		lk = k;
+      *num_ch_vtx = lk + uk;
+      
+      for (i = 0;  i < lk;  ++i) {
+         ch_vtx[i] = lhull[i];
+         //printf("ch_vtx[%d] = %d = (%f %f)\n", i, ch_vtx[i], vtx[ch_vtx[i]].x, vtx[ch_vtx[i]].y);
+      }
+      k = lk;
+      for (i = uk;  i > 0;  --i) {
+         ch_vtx[k++] = uhull[i];
+         //printf("ch_vtx[%d] = %d = (%f %f)\n", k-1, ch_vtx[k-1], vtx[ch_vtx[k-1]].x, vtx[ch_vtx[k-1]].y);
+      }
+   }
 
-		/* upper hull */
-		if (lk < num_vtx) {
-			k = 0;
-			for (i = 0;  i < num_vtx;  ++i) {
-				while (k >= 2 &&
-						!CW(&(vtx[uhull[k-2]]), &(vtx[uhull[k-1]]), &(vtx[i]))) --k;
-				uhull[k++] = i;
-			}
-			uk = k - 2;
-		}
-		else {
-			/*                                                                   */
-			/* all points are collinear                                          */
-			/*                                                                   */
-			uk = 0;
-		}
-
-		*num_ch_vtx = lk + uk;
-
-		for (i = 0;  i < lk;  ++i) {
-			ch_vtx[i] = lhull[i];
-			//printf("ch_vtx[%d] = %d = (%f %f)\n", i, ch_vtx[i], vtx[ch_vtx[i]].x, vtx[ch_vtx[i]].y);
-		}
-		k = lk;
-		for (i = uk;  i > 0;  --i) {
-			ch_vtx[k++] = uhull[i];
-			//printf("ch_vtx[%d] = %d = (%f %f)\n", k-1, ch_vtx[k-1], vtx[ch_vtx[k-1]].x, vtx[ch_vtx[k-1]].y);
-		}
-	}
-
-	return;
+   return;
 }
 
 
@@ -180,7 +180,7 @@ void FreeHulls(void)
 
 
 void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers, 
-		node *nodes, int *num_nodes)
+                 node *nodes)
 {
 	pnt *vtx = (pnt*) malloc(MAX * sizeof(pnt));
 	int *ch_vtx = (int*) malloc(MAX * sizeof(int));

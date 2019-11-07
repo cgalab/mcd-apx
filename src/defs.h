@@ -53,6 +53,7 @@ public:
    boolean obj				= false;
 
    boolean timings			= false;
+
    boolean use_stdin		= false;
 
    int partition			= 1;

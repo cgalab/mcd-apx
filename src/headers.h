@@ -36,8 +36,8 @@ void WriteOutputIndex(FILE *output, node *pnt, int num_pnt);
 
 void StartComputation(Data *data, rt_options &rt_opt, FILE *output);
 
-void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers,
-                 node *nodes, int *num_nodes);
+void OnionLayers(pnt *pnts, int num_pnts, loop *layers, int *num_layers, 
+                 node *nodes);
 
 void ConvexHull(pnt *vtx, int num_vtx, int *ch_vtx, int *num_ch_vtx);
 
@@ -102,12 +102,12 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
 void AddToConvexChain(int *convex, int *num_convex, node *nodes, int start,
                       int end, boolean ccw);
 
-void WriteConvexChain(FILE *output, pnt *pnts, node *nodes, int *convex,
-                      int *num_convex, boolean obj);
+boolean WriteConvexChain(FILE *output, pnt *pnts, int *convex, 
+                         int *num_convex, boolean obj);
 
 void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes, 
                           int *num_cvx_areas, int L0, int *convex,
-                          boolean obj);
+                          boolean obj, int *k1, int *k2);
 
 void WriteObjVertices(FILE *output, pnt *pnts, int num_pnts);
 
