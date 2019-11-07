@@ -308,7 +308,7 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
    // c1 = CountNodes(nodes, layers[0].nde);
    // c2 = CountNodes(nodes, layers[1].nde);
    // if ((c1 == 41)  &&  (c2 == 30)) 
-   //   printf("outer loop has %d nodes, inner loop has %d nodes\n", c1, c2);
+   //printf("outer loop has %d nodes, inner loop has %d nodes\n", c1, c2);
 
    i1 = layers[0].nde;
    j1 = layers[1].nde;
@@ -318,7 +318,8 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
    //if ((c1 == 41)  &&  (c2 == 30)) PrintNode(nodes, j2, "j2");
 
    /*                                                                        */
-   /* determine CH vertices that are right of  j1-->j2                       */
+   /* determine CH vertices that are right of  j1-->j2. make sure to include */
+   /* all vertices of layer[1] that are collinear with j1, j2.               */
    /*                                                                        */
    j3 = nodes[j2].next;
    while (collinear(&(pnts[j1]), &(pnts[j2]), &(pnts[j3]))  &&  (j3 != j1)) 
@@ -328,7 +329,7 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
       /* all vertices of this (innermost) layer are collinear                */
       /*                                                                     */
       HandleDegenerateLoop(output, pnts, layers, nodes, num_cvx_areas, 0, 
-                           convex, obj);
+                           convex, obj, &j1, &j2);
       /*                                                                     */
       /* mark those vertices of the inner CH that end up on the outer CH     */
       /*                                                                     */
@@ -336,6 +337,12 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
       return;
    }
    j2 = nodes[j3].prev;
+
+   j0 = nodes[j1].prev;
+   while (collinear(&(pnts[j2]), &(pnts[j1]), &(pnts[j0]))  &&  (j0 != j2)) 
+      j0 = nodes[j0].prev;
+   j1 = nodes[j0].next;
+
    GetVerticesInHalfplane(j1, j2, &i1, &i2, nodes, pnts);
 
    //printf("after GetVerticesInHalfplane()\n");
@@ -356,11 +363,11 @@ void GeneralCase(FILE *output, pnt *pnts, loop *layers, node *nodes,
    else
       i3 = nodes[i2].next;
 
-   //if ((c1 == 41)  &&  (c2 == 30)) PrintNode(nodes, i3, "i3");
-   //if ((c1 == 41)  &&  (c2 == 30)) PrintNode(nodes, i4, "i4");
-
    prev = nodes[j1].prev;
    next = nodes[j2].next;
+
+   //if ((c1 == 41)  &&  (c2 == 30)) PrintNode(nodes, i3, "i3");
+   //if ((c1 == 41)  &&  (c2 == 30)) PrintNode(nodes, i4, "i4");
 
    /*                                                                        */
    /* output the convex area right of  j1-->j2                               */
@@ -525,7 +532,7 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
    /*                                                                        */
    ConvexHull(vtx, num_vtx, ch_vtx, &num_ch_vtx);
    /*
-   //printf("round %d: %d CH vertices out of %d input points\n", 
+   printf("round %d: %d CH vertices out of %d input points\n", 
           num_CH_computations, num_ch_vtx, num_vtx);
    */
    StoreAsOnionLayer(ch_vtx, num_ch_vtx, layers, 0, vtx, nodes, randomized);
@@ -535,11 +542,12 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
    while (inner_pnts_left) {
       ConvexHull(vtx, num_vtx, ch_vtx, &num_ch_vtx);
       /*
-      //printf("round %d: %d CH vertices out of %d input points\n", 
+      printf("round %d: %d CH vertices out of %d input points\n", 
              num_CH_computations, num_ch_vtx, num_vtx);
       */
       StoreAsOnionLayer(ch_vtx, num_ch_vtx, layers, 1, vtx, nodes, randomized);
       ++num_CH_computations;
+      //printf("num_CH_computations = %d\n", num_CH_computations);
       if (num_CH_computations == 2) 
          lower_bound = DetermineLowerBound(pnts, num_pnts, layers, 2, nodes);
       if (num_ch_vtx == 1) {
@@ -561,9 +569,8 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
       else {
          GeneralCase(output, pnts, layers, nodes, vtx, &num_cvx_areas, convex,
                      obj);
-
          inner_pnts_left = UpdateInnerPoints(vtx, &num_vtx);
-         //if (num_CH_computations == 99) inner_pnts_left = false;
+         //if (num_CH_computations == 2813) inner_pnts_left = false;
       }
    }
 
@@ -592,22 +599,21 @@ void ComputeApproxDecomp(FILE *output, pnt *pnts, int num_pnts,
 
 void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes, 
                           int *num_cvx_areas, int L0, int *convex, 
-                          boolean obj)
+                          boolean obj, int *k1, int *k2)
 {
-   int i1, i2, i3, i4, j1, j2, j3, prev, next;
+   int i, j, i1, i2, i3, i4, j1, j2;
    int num_convex = 0, L1;
+   pnt *sort = (pnt*) malloc(MAX * sizeof(pnt));
 
-   //printf("in HandleOnionAnnulus(): onion = %d !!!!!!!!!!!!!\n", L0);
    L1 = L0 + 1;
+   //printf("HandleDegenerateLoop():\nL0 = %d, L1 = %d\n", L0, L1);
    i1 = layers[L0].nde;
    j1 = layers[L1].nde;
-   j2 = nodes[j1].next;
    //PrintNode(nodes, i1, "i1");
    //PrintNode(nodes, j1, "j1");
-   //PrintNode(nodes, j2, "j2");
 
    /*
-   if (L0 == 1) {
+   if (L0 == 0) {
       i2 = i1;
       printf("outer loop\n");
       do {
@@ -623,32 +629,52 @@ void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes,
    }
    */
 
-   j3 = nodes[j2].next;
-   while (collinear(&(pnts[j1]), &(pnts[j2]), &(pnts[j3]))  &&  (j3 > j2))
-      j3 = nodes[j3].next;
-   j2 = nodes[j3].prev;
+   /*                                                                        */
+   /* all points of layers[L1] are collinear. sort them in lexicographical   */
+   /* order                                                                  */
+   /*                                                                        */
+   j2 = j1;
+   i  = 0;
+   do {
+      sort[i].x = pnts[j2].x;
+      sort[i].y = pnts[j2].y;
+      sort[i].id = j2;
+      ++i;
+      j2 = nodes[j2].next;
+   } while (j2 != j1);
+   layers[L1].num = i;
+
+   qsort(&(sort[0]), i, sizeof(pnt), p_comp);
+
+   layers[L1].nde = sort[0].id;
+   for (i = 0;  i < layers[L1].num;  ++i) {
+      j = i + 1;
+      if (j == layers[L1].num) j = 0;
+      SpliceLoops(nodes, sort[i].id, sort[j].id);
+   }
+   j1 = sort[0].id;
+   j2 = sort[layers[L1].num-1].id;
 
    /*                                                                        */
    /* determine CH vertices that are right of  j1-->j2                       */
    /*                                                                        */
    GetVerticesInHalfplane(j1, j2, &i1, &i2, nodes, pnts);
 
-   if (CCW(&(pnts[i1]), &(pnts[j1]), &(pnts[j2]))) 
+   if (collinear(&(pnts[i1]), &(pnts[j1]), &(pnts[j2]))) 
       /*                                                                     */
       /* the points  i1, j1, j2  are collinear                               */
       /*                                                                     */
       i4 = i1;
    else
       i4 = nodes[i1].prev;
-   if (CCW(&(pnts[j1]), &(pnts[j2]), &(pnts[i2]))) 
+   if (collinear(&(pnts[j1]), &(pnts[j2]), &(pnts[i2]))) 
       /*                                                                     */
       /* the points  i1, j1, j2  are collinear                               */
       /*                                                                     */
       i3 = i2;
    else
       i3 = nodes[i2].next;
-   prev = nodes[i4].prev;
-   next = nodes[i3].next;
+
    AddToConvexChain(convex, &num_convex, nodes, i1, i2, true);
    AddToConvexChain(convex, &num_convex, nodes, j2, j1, false);
    if (WriteConvexChain(output, pnts, convex, &num_convex, obj))
@@ -674,24 +700,16 @@ void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes,
          printf("here 11\n");
    }
 
-   if (i3 == i4) { 
-      AppendNode(nodes, i4, j1);
-      CloseLoop(nodes, i4, j2);
-      layers[L0].nde = i4;
-      layers[L0].num = CountNodes(nodes, i4);
-      layers[L1].nde = i4;
-      layers[L1].num = CountNodes(nodes, i4);
-   }
-   else {
-      AppendNode(nodes, prev, i4);
-      AppendNode(nodes, i4, j1);
-      AppendNode(nodes, j2, i3);
-      CloseLoop(nodes, next, i3);
-      layers[L0].nde = i4;
-      layers[L0].num = CountNodes(nodes, i4);
-      layers[L1].nde = i3;
-      layers[L1].num = CountNodes(nodes, i3);
-   }
+
+   AppendNode(nodes, i4, j1);
+   AppendNode(nodes, j2, i3);
+   layers[L0].nde = i4;
+   layers[L0].num = CountNodes(nodes, i4);
+   layers[L1].nde = i4;
+   layers[L1].num = CountNodes(nodes, i4);
+
+   *k1 = j1;
+   *k2 = j2;
 
    return;
 
@@ -702,7 +720,7 @@ void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes,
 void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes, 
                         int *num_cvx_areas, int L0, int *convex, boolean obj)
 {
-   int i1, i2, i3, j1, j2, j3;
+   int i1, i2, i3, j1, j2, j3, j0;
    int i_start, j_start;
    int num_convex = 0;
 
@@ -732,20 +750,27 @@ void HandleOnionAnnulus(FILE *output, pnt *pnts, loop *layers, node *nodes,
    */
 
    /*                                                                        */
-   /* determine CH vertices that are right of  j1-->j2                       */
+   /* determine CH vertices that are right of  j1-->j2. make sure to include */
+   /* all vertices of layer[1] that are collinear with j1, j2.               */
    /*                                                                        */
    j3 = nodes[j2].next;
-   while (collinear(&(pnts[j1]), &(pnts[j2]), &(pnts[j3]))  &&  (j3 > j2))
+   while (collinear(&(pnts[j1]), &(pnts[j2]), &(pnts[j3]))  &&  (j3 != j1))
       j3 = nodes[j3].next;
-   if ((j3 < j2) &&  collinear(&(pnts[j1]), &(pnts[j2]), &(pnts[j3]))) {
+   if (j3 == j1) {
       /*                                                                     */
       /* all vertices of this (innermost) layer are collinear                */
       /*                                                                     */
       HandleDegenerateLoop(output, pnts, layers, nodes, num_cvx_areas, L0, 
-                           convex, obj);
+                           convex, obj, &j1, &j2);
       return;
    }
    j2 = nodes[j3].prev;
+
+   j0 = nodes[j1].prev;
+   while (collinear(&(pnts[j2]), &(pnts[j1]), &(pnts[j0]))  &&  (j0 != j2)) 
+      j0 = nodes[j0].prev;
+   j1 = nodes[j0].next;
+
    i_start = NIL;
    j_start = j1;
    GetVerticesInHalfplane(j1, j2, &i1, &i2, nodes, pnts);
@@ -883,3 +908,5 @@ void ComputeApproxDecompOnion(FILE *output, pnt *pnts,
 
    return;
 }
+
+

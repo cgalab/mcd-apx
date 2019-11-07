@@ -33,8 +33,6 @@
 #include "defs.h"
 #include "headers.h"
 
-int p_comp(const void *, const void *);
-
 
 int main(int argc, char *argv[])
 {
