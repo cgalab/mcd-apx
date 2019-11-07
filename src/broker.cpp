@@ -9,7 +9,7 @@ void Broker::partition(int num_sets) {
 	assert(num_sets > 1);
 	pCmpY pCmpY;
 
-	int width = ceil(sqrt(num_sets));
+	unsigned long width = ceil(sqrt(num_sets));
 	if(width < 2) {width = 2;}
 
 	if(cfg->verbose) {
@@ -45,7 +45,7 @@ void Broker::partition(int num_sets) {
 	}
 
 	ptmp.clear();
-	int cnt = 0, row = 0;
+	unsigned long cnt = 0, row = 0;
 	for(auto s : stripes) {
 		++row;
 		for(auto p : s) {
