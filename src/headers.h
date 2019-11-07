@@ -15,6 +15,8 @@
 #ifndef MIN_CONVEX_DECOMP_HEADERS_H
 #define MIN_CONVEX_DECOMP_HEADERS_H
 
+int p_comp(const void *, const void *);
+
 void ArgEval(int argc, char *argv[], rt_options *rt_opt);
 
 FILE *OpenFile(const char *file_name, const char *access);
@@ -97,7 +99,7 @@ boolean WriteConvexChain(FILE *output, pnt *pnts, int *convex,
 
 void HandleDegenerateLoop(FILE *output, pnt *pnts, loop *layers, node *nodes, 
                           int *num_cvx_areas, int L0, int *convex,
-                          boolean obj);
+                          boolean obj, int *k1, int *k2);
 
 void WriteObjVertices(FILE *output, pnt *pnts, int num_pnts);
 
