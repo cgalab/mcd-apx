@@ -66,7 +66,7 @@ public:
 	    else  {
 	       if      (a.y < b.y)  return true;
 	       else if (a.y > b.y)  return false;
-	       else                 return true;
+	       else                 return false;
 	    }
   }
 };
@@ -78,7 +78,7 @@ public:
 	    else  {
 	       if      (a.x < b.x)  return true;
 	       else if (a.x > b.x)  return false;
-	       else                 return true;
+	       else                 return false;
 	    }
   }
 };
