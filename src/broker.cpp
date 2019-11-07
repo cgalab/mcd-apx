@@ -3,6 +3,7 @@
 #include <set>
 #include <algorithm>    // std::for_each, std::sort
 #include <math.h>
+#include <random>
 
 void Broker::partition(int num_sets) {
 	assert(num_sets > 1);
@@ -84,8 +85,43 @@ void Broker::merge() {
 
 	tri.runTriangle(pnts,num_pnts,holePnts,allZeroOnions);
 
-	for(auto t: tri.triangles) {
-		faces.push_back(Face({t.a,t.b,t.c}));
+	std::srand(cfg->seed);
+
+	mergeSomeTris();
+
+	for(auto pair : mergeTriToFace) {
+		auto ta = tri.triangles[pair[0]];
+		auto tb = tri.triangles[pair[1]];
+		auto comPair = tri.getCommonPair(ta,tb);
+		int aIdx = tri.getMissingCorner(ta,comPair[0],comPair[1]);
+		int cIdx = tri.getMissingCorner(tb,comPair[0],comPair[1]);
+
+		faces.push_back(Face({ aIdx, comPair[0], cIdx, comPair[1] }));
+	}
+
+	for(unsigned long i = 0; i < tri.triangles.size(); ++i) {
+		if(visitedTris.find(i) == visitedTris.end()) {
+			auto t = tri.triangles[i];
+			faces.push_back(Face({t.a,t.b,t.c}));
+		}
+
+	}
+}
+
+
+void Broker::mergeSomeTris() {
+	std::vector<unsigned long> triQueue;
+	for(unsigned long i=0; i < tri.triangles.size();++i) {triQueue.push_back(i);}
+
+
+	//std::random_shuffle ( triQueue.begin(), triQueue.end(), myrandom);
+	auto rng = std::default_random_engine {};
+	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
+
+	for(auto idx : triQueue) {
+		if(visitedTris.find(idx) == visitedTris.end()) {
+			attemptMerge(idx);
+		}
 	}
 }
 
@@ -104,6 +140,26 @@ void Broker::collectZeroOnions() {
 	}
 }
 
+void Broker::attemptMerge(int triIdx) {
+	auto tringles = tri.triangles;
+	const Triangle t = tringles[triIdx];
+	std::vector<int> n;
+	for(auto idx : {t.nAB,t.nBC,t.nCA}) {
+		if(idx != NIL && visitedTris.find(idx) == visitedTris.end()) {
+			n.push_back(idx);
+		}
+	}
+	for(auto idx : n) {
+		const Triangle tn = tringles[idx];
+		if(tri.isConvexQuad(t,tn))  {
+			visitedTris.insert(triIdx);
+			visitedTris.insert(idx);
+			mergeTriToFace.push_back({triIdx,idx});
+			return;
+		}
+	}
+}
+
 void Broker::writeFacesToFile(FILE *output) const {
 	std::stringstream ss;
 	for(auto f : faces) {
@@ -114,7 +170,6 @@ void Broker::writeFacesToFile(FILE *output) const {
 	fprintf(output, "%s", ss.str().c_str());
 }
 
-
 void Broker::printSets() const {
 	int cnt = 0;
 	for(auto s : sets) {
@@ -123,7 +178,6 @@ void Broker::printSets() const {
 		std::cout << std::endl;
 	}
 }
-
 
 bool Broker::fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *pd) {
 	bool cw  = ( CW(pa,pb,pc) &&  CW(pb,pc,pd) &&  CW(pc,pd,pa) &&  CW(pd,pa,pb));

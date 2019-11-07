@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <iostream>
+#include <cstdlib>
 
 #include <list>
 #include <vector>
@@ -33,6 +34,8 @@ public:
 
 	void printSets() const;
 
+	void mergeSomeTris();
+
 	Sets  sets;
 	Faces faces; /* faces from the merge */
 
@@ -43,7 +46,14 @@ public:
 	Tri tri;
 
 private:
+	std::set<int> visitedTris;
+	std::vector< std::vector<int>>  mergeTriToFace;
+
 	Onions allZeroOnions;
+
+	void attemptMerge(int triIdx);
+
+//	int myrandom (int i) { return std::rand()%i;}
 };
 
 #endif
