@@ -89,16 +89,6 @@ void Broker::merge() {
 
 	mergeSomeTris();
 
-	for(auto pair : mergeTriToFace) {
-		auto ta = tri.triangles[pair[0]];
-		auto tb = tri.triangles[pair[1]];
-		auto comPair = tri.getCommonPair(ta,tb);
-		int aIdx = tri.getMissingCorner(ta,comPair[0],comPair[1]);
-		int cIdx = tri.getMissingCorner(tb,comPair[0],comPair[1]);
-
-		faces.push_back(Face({ aIdx, comPair[0], cIdx, comPair[1] }));
-	}
-
 	for(unsigned long i = 0; i < tri.triangles.size(); ++i) {
 		if(visitedTris.find(i) == visitedTris.end()) {
 			auto t = tri.triangles[i];
@@ -114,13 +104,16 @@ void Broker::mergeSomeTris() {
 	for(unsigned long i=0; i < tri.triangles.size();++i) {triQueue.push_back(i);}
 
 
+	std::cout << "mergeSomeTris" << std::endl;
 	//std::random_shuffle ( triQueue.begin(), triQueue.end(), myrandom);
 	auto rng = std::default_random_engine {};
 	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
+	std::cout << "mergeSomeTris 2" << std::endl;
 
 	for(auto idx : triQueue) {
 		if(visitedTris.find(idx) == visitedTris.end()) {
-			attemptMerge(idx);
+			std::cout << "mergeSomeTris loop" << std::endl;
+			attemptExpansion(idx);
 		}
 	}
 }
@@ -140,12 +133,54 @@ void Broker::collectZeroOnions() {
 	}
 }
 
-void Broker::attemptMerge(int triIdx) {
+void Broker::attemptExpansion(int triIdx) {
 	auto tringles = tri.triangles;
+		std::cout << ",";
 	const Triangle t = tringles[triIdx];
+		std::cout << ","; fflush(stdout);
+
+	/* we try to expand this face */
+	auto f = Face({t.a,t.b,t.c});
+
+	std::set<long int> checked;
+	std::list<long int> candidates = {t.nAB,t.nBC,t.nCA};
+
+	do {
+		auto cndIdx = candidates.front();
+		std::cout << ",";fflush(stdout);
+		if(cndIdx != NIL
+			&& visitedTris.find(cndIdx) == visitedTris.end()
+			&&     checked.find(cndIdx) == checked.end()
+		) {
+
+			/* check if we can add this tri and f stays convex */
+			if(addTriToFace(cndIdx,f)) {
+
+				/* we can add it, then we should check its neighbours as well */
+				auto tCnd = tringles[cndIdx];
+				for(auto tCndN : {tCnd.nAB,tCnd.nBC,tCnd.nCA}) {
+					if(tCndN != NIL
+						&& visitedTris.find(tCndN) == visitedTris.end()
+						&&     checked.find(tCndN) == checked.end())
+					{
+						candidates.push_back(tCndN);
+					}
+				}
+				/* add to never touch it again */
+				visitedTris.insert(cndIdx);
+			}
+			/* add to locally checked tris */
+			checked.insert(cndIdx);
+		}
+
+		candidates.pop_front();
+	} while(!candidates.empty());
+
 	std::vector<int> n;
 	for(auto idx : {t.nAB,t.nBC,t.nCA}) {
-		if(idx != NIL && visitedTris.find(idx) == visitedTris.end()) {
+		if(idx != NIL
+				&& visitedTris.find(idx) == visitedTris.end()
+				&& checked.find(idx) == checked.end() ) {
 			n.push_back(idx);
 		}
 	}
@@ -154,10 +189,48 @@ void Broker::attemptMerge(int triIdx) {
 		if(tri.isConvexQuad(t,tn))  {
 			visitedTris.insert(triIdx);
 			visitedTris.insert(idx);
-			mergeTriToFace.push_back({triIdx,idx});
 			return;
 		}
 	}
+
+	//	for(auto pair : mergeTriToFace) {
+	//		auto ta = tri.triangles[pair[0]];
+	//		auto tb = tri.triangles[pair[1]];
+	//		auto comPair = tri.getCommonPair(ta,tb);
+	//		int aIdx = tri.getMissingCorner(ta,comPair[0],comPair[1]);
+	//		int cIdx = tri.getMissingCorner(tb,comPair[0],comPair[1]);
+	//
+	//		faces.push_back(Face({ aIdx, comPair[0], cIdx, comPair[1] }));
+	//	}
+
+
+}
+
+bool Broker::addTriToFace(long int tidx, Face& f) {
+	auto t = tri.triangles[tidx];
+	/* finding the indices */
+	std::cout << ".";
+	auto itB = f.begin();
+	while(t.hasIndex(*itB)) {++itB;}
+
+	auto itA = cPrev(f,itB);
+	auto itD = cNext(f,itB);
+	auto itE = cNext(f,itD);
+
+	auto idxC = t.getThirdIndex(*itB,*itD);
+
+	auto Pa = pnts[*itA];
+	auto Pb = pnts[*itB];
+	auto Pc = pnts[idxC];
+	auto Pd = pnts[*itD];
+	auto Pe = pnts[*itE];
+
+	if(CCW(&Pa,&Pb,&Pc) && CCW(&Pc,&Pd,&Pe)) {
+		f.insert(itD,idxC);
+		return true;
+	}
+
+	return false;
 }
 
 void Broker::writeFacesToFile(FILE *output) const {

@@ -11,10 +11,9 @@ bool operator!=(const Triangle& a, const Triangle& b) {return a.id != b.id;}
 
 
 void Tri::runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions) {
-
 	/* init/fill the triangle structure with data */
 	filltriangulateioIn( pnts,num_pnts,holePnts,onions,triangleIN);
-	inittriangulateioOut(pnts,num_pnts,onions,tOUT 	    );
+	inittriangulateioOut(     num_pnts,onions,tOUT 	    );
 
 	/* triangulate */
 	triangulate(triswitches,&triangleIN,&tOUT,&vorout);
@@ -138,33 +137,6 @@ void Tri::filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onio
 		tri.pointmarkerlist[i] = i+2;
 	}
 
-//	tri.numberofholes 			= 0;
-//	tri.holelist				= NULL;
-//	tri.numberofregions			= 0;
-//	tri.regionlist				= NULL;
-//	tri.numberofcorners			= 3;
-//
-//	tri.numberofpointattributes = 0;
-//	tri.pointattributelist 		= NULL;
-//
-//	tri.numberofsegments = polygonSize;
-//	tri.segmentlist = new int[tri.numberofsegments * 2];
-//	tri.segmentmarkerlist = new int[tri.numberofsegments];
-//
-//	int segCnt = 0;
-//	for(auto& onion : onions) {
-//		auto it = onion.begin();
-//		do {
-//			tri.segmentlist[2*segCnt]     = *it;
-//			++it;
-//			if(it == onion.end()) {it = onion.begin();}
-//			tri.segmentlist[2*segCnt + 1] = *it;
-//			tri.segmentmarkerlist[segCnt] = segCnt+2;
-//
-//			++segCnt;
-//		} while(it != onion.begin());
-//	}
-
 	tri.numberofholes 			= holePnts.size();
 	tri.holelist				= new double[tri.numberofholes * 2];
 	for(long i = 0; i < tri.numberofholes; ++i) {
@@ -196,20 +168,9 @@ void Tri::filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onio
 			++segCnt;
 		} while(it != onion.begin());
 	}
-
-//	auto it = polygon.begin();
-//	for(long i = 0; i < polygon.size(); ++i) {
-//		tri.segmentlist[2*i]     = *it;
-//		++it;
-//		if(it == polygon.end()) {it = polygon.begin();}
-//		tri.segmentlist[2*i + 1] = *it;
-//
-//		/* one is default for CH boundary segments */
-//		tri.segmentmarkerlist[i] = i+2;
-//	}
 }
 
-void Tri::inittriangulateioOut(pnt* pnts, int num_pnts, const Onions& onions, triangulateio& tri) {
+void Tri::inittriangulateioOut(int num_pnts, const Onions& onions, triangulateio& tri) {
 	tri.numberofpoints	  = num_pnts;
 	tri.pointlist    	  = NULL;
 	tri.pointmarkerlist   = NULL;
@@ -241,20 +202,5 @@ void Tri::printTriangles() const {
 	std::cout << std::endl;
 }
 
-
-void Tri::printEdges() const {
-	std::cout << "edgelist idx: ";
-	for (long i = 0; i < (long)tOUT.numberofedges*2; ++i) {
-		std::cout << tOUT.edgelist[i] << ", ";
-	}
-	std::cout << std::endl;
-
-	std::cout << std::endl;
-	for (long i = 0; i < (long)tOUT.numberofedges; ++i) {
-//		Edge e = getEdge(i);
-//		std::cout << e << " / ";
-	}
-	std::cout << std::endl;
-}
 
 

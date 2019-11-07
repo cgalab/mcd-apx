@@ -22,6 +22,8 @@ class Broker : public Data {
 	using Face  = std::vector<long>;
 	using Faces = std::vector<Face>;
 
+	using FaceIterator = Face::iterator;
+
 public:
 	Broker(int size = 0):Data(size) {}
 
@@ -51,9 +53,16 @@ private:
 
 	Onions allZeroOnions;
 
-	void attemptMerge(int triIdx);
+	bool addTriToFace(long int tidx, Face& f);
 
-//	int myrandom (int i) { return std::rand()%i;}
+	void attemptExpansion(int triIdx);
+
+	FaceIterator cNext(Face& f, FaceIterator it) {
+		return (++it == f.end()) ? f.begin() : it;
+	}
+	FaceIterator cPrev(Face& f, FaceIterator it) {
+		return (it == f.begin()) ? (f.end()-1) : --it;
+	}
 };
 
 #endif

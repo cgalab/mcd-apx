@@ -65,6 +65,17 @@ public:
 		return MAX;
 	}
 
+	long getThirdIndex(long int i, long int j) const {
+		for(auto idx : {a,b,c}) {
+			if(idx != i && idx != j) {
+				return idx;
+			}
+		}
+		return NIL;
+	}
+
+	bool hasIndex(long int i) const {return i == a || i == b || i == c;}
+
 	void updateNeibhorFromTo(int nOld, int nNew) {
 		if(nAB == nOld) {nAB=nNew;}
 		else if(nBC == nOld) {nBC=nNew;}
@@ -178,13 +189,12 @@ public:
 	void setConfig(rt_options* rt_opt_)  {rt_opt = rt_opt_;}
 
 	void printTriangles() const;
-	void printEdges() const;
 
 	Triangles triangles;
 
 private:
 	void filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, triangulateio& tri);
-	void inittriangulateioOut(pnt* pnts, int num_pnts, const Onions& onions, triangulateio& tri);
+	void inittriangulateioOut(int num_pnts, const Onions& onions, triangulateio& tri);
 
 	triangulateio triangleIN, tOUT, vorout;
 	rt_options* rt_opt = nullptr;
