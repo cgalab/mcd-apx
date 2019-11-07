@@ -104,15 +104,11 @@ void Broker::mergeSomeTris() {
 	for(unsigned long i=0; i < tri.triangles.size();++i) {triQueue.push_back(i);}
 
 
-	std::cout << "mergeSomeTris" << std::endl;
-	//std::random_shuffle ( triQueue.begin(), triQueue.end(), myrandom);
 	auto rng = std::default_random_engine {};
 	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
-	std::cout << "mergeSomeTris 2" << std::endl;
 
 	for(auto idx : triQueue) {
 		if(visitedTris.find(idx) == visitedTris.end()) {
-			std::cout << "mergeSomeTris loop" << std::endl;
 			attemptExpansion(idx);
 		}
 	}
@@ -135,19 +131,18 @@ void Broker::collectZeroOnions() {
 
 void Broker::attemptExpansion(int triIdx) {
 	auto tringles = tri.triangles;
-		std::cout << ",";
 	const Triangle t = tringles[triIdx];
-		std::cout << ","; fflush(stdout);
 
 	/* we try to expand this face */
-	auto f = Face({t.a,t.b,t.c});
+	Face f = {t.a,t.b,t.c};
 
 	std::set<long int> checked;
 	std::list<long int> candidates = {t.nAB,t.nBC,t.nCA};
 
+	checked.insert(triIdx);
+
 	do {
 		auto cndIdx = candidates.front();
-		std::cout << ",";fflush(stdout);
 		if(cndIdx != NIL
 			&& visitedTris.find(cndIdx) == visitedTris.end()
 			&&     checked.find(cndIdx) == checked.end()
@@ -155,6 +150,11 @@ void Broker::attemptExpansion(int triIdx) {
 
 			/* check if we can add this tri and f stays convex */
 			if(addTriToFace(cndIdx,f)) {
+
+//				for(auto p : f) {
+//					std::cout << p << " ";
+//				}
+//				std::cout << std::endl;
 
 				/* we can add it, then we should check its neighbours as well */
 				auto tCnd = tringles[cndIdx];
@@ -176,48 +176,41 @@ void Broker::attemptExpansion(int triIdx) {
 		candidates.pop_front();
 	} while(!candidates.empty());
 
-	std::vector<int> n;
-	for(auto idx : {t.nAB,t.nBC,t.nCA}) {
-		if(idx != NIL
-				&& visitedTris.find(idx) == visitedTris.end()
-				&& checked.find(idx) == checked.end() ) {
-			n.push_back(idx);
-		}
+	if(f.size() > 3) {
+		visitedTris.insert(triIdx);
+		faces.push_back(f);
 	}
-	for(auto idx : n) {
-		const Triangle tn = tringles[idx];
-		if(tri.isConvexQuad(t,tn))  {
-			visitedTris.insert(triIdx);
-			visitedTris.insert(idx);
-			return;
-		}
-	}
-
-	//	for(auto pair : mergeTriToFace) {
-	//		auto ta = tri.triangles[pair[0]];
-	//		auto tb = tri.triangles[pair[1]];
-	//		auto comPair = tri.getCommonPair(ta,tb);
-	//		int aIdx = tri.getMissingCorner(ta,comPair[0],comPair[1]);
-	//		int cIdx = tri.getMissingCorner(tb,comPair[0],comPair[1]);
-	//
-	//		faces.push_back(Face({ aIdx, comPair[0], cIdx, comPair[1] }));
-	//	}
-
-
 }
 
 bool Broker::addTriToFace(long int tidx, Face& f) {
 	auto t = tri.triangles[tidx];
 	/* finding the indices */
-	std::cout << ".";
 	auto itB = f.begin();
-	while(t.hasIndex(*itB)) {++itB;}
+	while(itB != f.end() && !t.hasIndex(*itB)) {++itB;}
+
+	auto itX = cNext(f,itB);
+	if(t.hasIndex(*itX)) {
+
+	} else {
+		itX = cPrev(f,itB);
+		if(t.hasIndex(*itX)) {
+			itB = itX;
+		}
+	}
+
+	if(itB == f.end()) {
+		return false;
+	}
 
 	auto itA = cPrev(f,itB);
 	auto itD = cNext(f,itB);
 	auto itE = cNext(f,itD);
 
 	auto idxC = t.getThirdIndex(*itB,*itD);
+
+	if(idxC == NIL) {
+		return false;
+	}
 
 	auto Pa = pnts[*itA];
 	auto Pb = pnts[*itB];
