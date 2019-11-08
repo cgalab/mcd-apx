@@ -87,6 +87,10 @@ void Broker::merge() {
 
 	std::srand(cfg->seed);
 
+	if(cfg->flip_tris) {
+		flipTriangles();
+	}
+
 	mergeSomeTris();
 
 	for(unsigned long i = 0; i < tri.triangles.size(); ++i) {
@@ -98,8 +102,8 @@ void Broker::merge() {
 	}
 }
 
-void Broker::runTriangleOnlyApproach() {
-	merge();
+void Broker::flipTriangles() {
+
 }
 
 void Broker::mergeSomeTris() {
@@ -108,6 +112,7 @@ void Broker::mergeSomeTris() {
 
 
 	auto rng = std::default_random_engine {};
+	rng.seed(cfg->seed);
 	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
 
 	for(auto idx : triQueue) {

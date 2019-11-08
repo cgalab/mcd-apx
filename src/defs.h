@@ -57,6 +57,7 @@ public:
    boolean use_stdin		= false;
 
    int partition			= 1;
+   boolean flip_tris		= false;
 };
 
 class pCmpX {
