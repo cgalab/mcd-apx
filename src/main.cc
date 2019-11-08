@@ -123,6 +123,8 @@ int main(int argc, char *argv[])
 		cvx_faces += s.num_cvx_areas;
 	}
 	std::cout << "num_cvx_areas: " << cvx_faces << std::endl;
+	std::cout << "num_partitions: " << rt_opt.partition << std::endl;
+	std::cout << "num_tri_fips: " << rt_opt.flip_tris << std::endl;
 	fflush(stdout);
 
 

@@ -105,10 +105,17 @@ void Broker::mergeSomeTris() {
 	auto rng = std::default_random_engine {};
 	rng.seed(cfg->seed);
 
-	if(cfg->flip_tris > 0) {
+	if(cfg->flip_tris != 0) {
 		std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
 		int flips = cfg->flip_tris;
+
+		if(cfg->flip_tris == -1) {
+			triQueue.erase(triQueue.begin()+(int)sqrt(tri.triangles.size()),triQueue.end());
+			flips = 1;
+		}
+
 		while(flips-- > 0) {
+
 			for(auto idx : triQueue) {
 				if(visitedTris.find(idx) == visitedTris.end()) {
 					auto& t = tri.triangles[idx];
@@ -130,7 +137,10 @@ void Broker::mergeSomeTris() {
 			visitedTris.clear();
 		}
 	}
-
+	if(cfg->flip_tris == -1) {
+		triQueue.clear();
+		for(unsigned long i=0; i < tri.triangles.size();++i) {triQueue.push_back(i);}
+	}
 	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
 
 	for(auto idx : triQueue) {
