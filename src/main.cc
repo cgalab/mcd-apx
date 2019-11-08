@@ -103,6 +103,12 @@ int main(int argc, char *argv[])
 		/* write additional faces from merge*/
 		data.writeFacesToFile(output);
 
+	} else if(rt_opt.partition < 1) {
+		/************************************************************/
+		/*			      RANDOM   APPROACH                      */
+		/************************************************************/
+		data.runTriangleOnlyApproach();
+		data.writeFacesToFile(output);
 	} else {
 		/************************************************************/
 		/*			     CLASSICAL APPROACH                       */
@@ -112,7 +118,7 @@ int main(int argc, char *argv[])
 
 	/* print stats for wrapper */
 	int cvx_faces = 0;
-	cvx_faces += data.tri.triangles.size();
+	cvx_faces += data.faces.size();
 	for(auto& s : data.sets) {
 		cvx_faces += s.num_cvx_areas;
 	}

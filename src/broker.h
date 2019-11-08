@@ -28,15 +28,18 @@ public:
 	Broker(int size = 0):Data(size) {}
 
 	void partition(int num_sets = 1);
+	void merge();
+
+	void mergeSomeTris();
+
+	void runTriangleOnlyApproach();
+
 	void collectZeroOnions();
 	Pnts collectHolePnts();
 
-	void merge();
 	void writeFacesToFile(FILE *output) const;
-
 	void printSets() const;
 
-	void mergeSomeTris();
 
 	Sets  sets;
 	Faces faces; /* faces from the merge */

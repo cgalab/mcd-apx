@@ -98,6 +98,9 @@ void Broker::merge() {
 	}
 }
 
+void Broker::runTriangleOnlyApproach() {
+	merge();
+}
 
 void Broker::mergeSomeTris() {
 	std::vector<unsigned long> triQueue;
@@ -150,11 +153,6 @@ void Broker::attemptExpansion(int triIdx) {
 
 			/* check if we can add this tri and f stays convex */
 			if(addTriToFace(cndIdx,f)) {
-
-//				for(auto p : f) {
-//					std::cout << p << " ";
-//				}
-//				std::cout << std::endl;
 
 				/* we can add it, then we should check its neighbours as well */
 				auto tCnd = tringles[cndIdx];
