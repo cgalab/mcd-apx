@@ -166,8 +166,8 @@ public:
 
 	void reflexSensitiveFlipping(Triangle tri, const int vertex);
 
-	void flipPair(Triangle ta, Triangle tb);
-	void flipPair(int a, int b) {flipPair(getTriangle(a),getTriangle(b));}
+	void flipPair(Triangle& ta, Triangle& tb);
+	void flipPair(int a, int b) {flipPair(triangles[a],triangles[b]);}
 
 	std::array<long,2> getCommonPair(const Triangle& ta, const Triangle& tb) const;
 

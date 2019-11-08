@@ -26,7 +26,7 @@ void Tri::runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onio
 
 
 
-void Tri::flipPair(Triangle ta, Triangle tb) {
+void Tri::flipPair(Triangle& ta, Triangle& tb) {
 	auto cp = getCommonPair(ta,tb);
 	long taM = getMissingCorner(ta,cp[0],cp[1]);
 	long tbM = getMissingCorner(tb,cp[0],cp[1]);

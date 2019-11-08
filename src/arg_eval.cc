@@ -44,7 +44,7 @@ static struct option long_options[] = {
 		{ "seed"   	    	, required_argument, 0, 's'},
 		{ "counter"   	    , required_argument, 0, 'c'},
 		{ "timeout"   	    , required_argument, 0, 'T'},
-		{ "flip-tris"  	    , no_argument      , 0, 'f'},
+		{ "flip-tris"  	    , required_argument, 0, 'f'},
 		{ "index"   	    , no_argument      , 0, 'I'},
 		{ "random"   	    , no_argument      , 0, 'R'},
 		{ "verbose" 	    , no_argument      , 0, 'v'},
@@ -68,7 +68,7 @@ usage(const char *progname, int err) {
 	fprintf(f,"           --index   \t| --I \t\t\t enable index\n");
 	fprintf(f,"           --random  \t| --R \t\t\t use randomized approach (default)\n");
 	fprintf(f,"           --verbose \t| --v \t\t\t print processing information\n");
-	fprintf(f,"           --flip-tris \t| --f \t\t\t flip generated triangles (uses same random seed)\n");
+	fprintf(f,"           --flip-tris \t| --f NUM\t\t flip generated triangles, repeat flipping NUM times (uses same random seed)\n");
 	fprintf(f,"           --timings \t| --t \t\t\t print timings [ms]\n");
 	fprintf(f,"           --partition \t| --p NUM\t\t partition into NUM sets and merge, (0 disables onion computation)\n");
 	fprintf(f,"    For legacy reasons, instead of passing as arguments, input and output\n");
@@ -107,7 +107,7 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 			break;
 
 		case 'f':
-			rt_opt->flip_tris = true;
+			rt_opt->flip_tris = atoi(optarg);
 			break;
 
 		case 'O':

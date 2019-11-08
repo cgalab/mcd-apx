@@ -85,12 +85,6 @@ void Broker::merge() {
 
 	tri.runTriangle(pnts,num_pnts,holePnts,allZeroOnions);
 
-	std::srand(cfg->seed);
-
-	if(cfg->flip_tris) {
-		flipTriangles();
-	}
-
 	mergeSomeTris();
 
 	for(unsigned long i = 0; i < tri.triangles.size(); ++i) {
@@ -102,9 +96,6 @@ void Broker::merge() {
 	}
 }
 
-void Broker::flipTriangles() {
-
-}
 
 void Broker::mergeSomeTris() {
 	std::vector<unsigned long> triQueue;
@@ -113,6 +104,33 @@ void Broker::mergeSomeTris() {
 
 	auto rng = std::default_random_engine {};
 	rng.seed(cfg->seed);
+
+	if(cfg->flip_tris > 0) {
+		std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
+		int flips = cfg->flip_tris;
+		while(flips-- > 0) {
+			for(auto idx : triQueue) {
+				if(visitedTris.find(idx) == visitedTris.end()) {
+					auto& t = tri.triangles[idx];
+					std::vector<long> nV = {t.nAB,t.nBC,t.nCA};
+					std::shuffle(std::begin(nV), std::end(nV), rng);
+					for(auto n : nV) {
+						if(n != NIL && visitedTris.find(n) == visitedTris.end()) {
+							auto& tN = tri.triangles[n];
+							if(tri.isConvexQuad(t,tN)) {
+								tri.flipPair(t,tN);
+								visitedTris.insert(idx);
+								visitedTris.insert(n);
+							}
+						}
+					}
+
+				}
+			}
+			visitedTris.clear();
+		}
+	}
+
 	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
 
 	for(auto idx : triQueue) {

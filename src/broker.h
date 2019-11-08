@@ -30,7 +30,6 @@ public:
 	void partition(int num_sets = 1);
 	void merge();
 
-	void flipTriangles();
 	void mergeSomeTris();
 
 	void runTriangleOnlyApproach() {merge();}
