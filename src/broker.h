@@ -9,6 +9,8 @@
 #include <vector>
 #include <sstream>
 #include <string>
+
+#include <unordered_set>
 #include <unordered_map>
 
 #include <random>
@@ -18,17 +20,17 @@
 #include "data.h"
 #include "Tri.h"
 
+using Face  = std::vector<long>;
+using Faces = std::list<Face>;
+using FaceIterator = Face::iterator;
+using AFacesIterator = Faces::iterator;
 
 class Broker : public Data {
 	using Sets  = std::vector<Data>;
 	using Cfg   = rt_options;
-	using Face  = std::vector<long>;
-	using Faces = std::list<Face>;
-
-	using FaceIterator = Face::iterator;
 
 public:
-	Broker(int size = 0):Data(size) {}
+	Broker(int size = MAX):Data(size) {}
 
 	void partition(int num_sets = 1);
 	void merge();
@@ -57,8 +59,8 @@ public:
 private:
 	std::set<int> visitedTris;
 
-	std::unordered_map<long int, long int> triToFaceMap;
-	std::unordered_map<long int, long int> faceToTriMap;
+	std::unordered_map<long int, AFacesIterator> triToFaceMap;
+	std::unordered_map<AFacesIterator, std::list<long int>> faceToTriMap;
 
 	std::default_random_engine rng = std::default_random_engine {};
 
@@ -71,6 +73,8 @@ private:
 
 	void attemptFlipping(TriQueue &triQueue);
 
+	std::list<long int> getTrisOfFaces(std::unordered_set<AFacesIterator>& trifaces);
+	std::unordered_set<AFacesIterator> getFacesOfTriangles(TriQueue &tris);
 	TriQueue selectNumTrisBFS(long int triIdx, long int num);
 
 	inline FaceIterator cNext(Face& f, FaceIterator it) {return (++it == f.end()) ? f.begin() : it;}

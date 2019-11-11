@@ -29,15 +29,69 @@ void Broker::merge() {
 
 void Broker::startHoleRecursion() {
 	/* let us start by a BFS of a random triangle and select sqrt n tris */
+	TriQueue triQueue(tri.triangles.size());
+	std::iota(triQueue.begin(),triQueue.end(),0);
+	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
+	triQueue.erase(triQueue.begin()+(int)sqrt(tri.triangles.size()),triQueue.end());
+
+
+	auto selectedTris = selectNumTrisBFS(triQueue.front(),(long int)sqrt(tri.triangles.size()));
+	/* let us find the faces that contain these triangles at the moment */
+	auto facesOfTris = getFacesOfTriangles(selectedTris);
+	auto allTris = getTrisOfFaces(facesOfTris);
 
 //	triQueue.erase(triQueue.begin()+(int)sqrt(tri.triangles.size()),triQueue.end());
 //	selectNumTrisBFS
+}
+
+std::list<long int> getTrisOfFaces(std::unordered_set<AFacesIterator>& trifaces) {
+	std::list<long int> tris;
+	for(auto f : trifaces) {
+//		auto it = faceToTriMap.find(f);
+//		if(it != faceToTriMap.end()) {
+//			for(auto tidx : it.second()) {
+//				tris.push_back(tidx);
+//			}
+//		}
+	}
+	return tris;
+}
+
+std::unordered_set<AFacesIterator> Broker::getFacesOfTriangles(TriQueue &tris) {
+	std::unordered_set< AFacesIterator > set;
+	for(auto t : tris) {
+		auto it = triToFaceMap.find(t);
+		if(it != triToFaceMap.end()) {
+			set.insert(it->second);
+		}
+	}
+	return set;
 }
 
 
 TriQueue Broker::selectNumTrisBFS(long int triIdx, long int num) {
 	TriQueue tq;
 	auto& t = tri.triangles[triIdx];
+	std::set<long int> checked;
+
+	tq.push_back(triIdx);
+	checked.insert(triIdx);
+
+	auto it = tq.begin();
+
+	while(tq.size() < num) {
+		t = tri.triangles[*it];
+
+		for(auto n : {t.nAB,t.nBC,t.nCA}) {
+			if(n != NIL && checked.find(n) == checked.end()) {
+				tq.push_back(n);
+				checked.insert(n);
+			}
+		}
+
+		if(++it == tq.end()) {break;}
+	}
+
 	return tq;
 }
 
@@ -124,6 +178,7 @@ void Broker::attemptExpansion(int triIdx) {
 
 	std::set<long int> checked;
 	std::list<long int> candidates = {t.nAB,t.nBC,t.nCA};
+	std::list<long int> trisInFace = {triIdx};
 
 	checked.insert(triIdx);
 
@@ -136,9 +191,7 @@ void Broker::attemptExpansion(int triIdx) {
 			/* check if we can add this tri and f stays convex */
 			if(addTriToFace(cndIdx,f)) {
 
-				/* remember that we used cndIdx in this face! */
-				triToFaceMap[cndIdx] = faces.size();
-				triToFaceMap[faces.size()] = cndIdx;
+				trisInFace.push_back(cndIdx);
 
 				/* we can add it, then we should check its neighbours as well */
 				auto tCnd = tringles[cndIdx];
@@ -162,9 +215,13 @@ void Broker::attemptExpansion(int triIdx) {
 
 	if(f.size() > 3) {
 		visitedTris.insert(triIdx);
-		triToFaceMap[triIdx] = faces.size();
-		faceToTriMap[faces.size()] = triIdx;
 		faces.push_back(f);
+
+		auto fIt = std::prev(faces.end());
+		for(auto tidx : trisInFace) {
+			triToFaceMap[tidx] = fIt;
+		}
+		faceToTriMap[fIt] = trisInFace;
 	}
 }
 
