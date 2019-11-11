@@ -3,82 +3,10 @@
 #include <set>
 #include <algorithm>    // std::for_each, std::sort
 #include <math.h>
-#include <random>
 
-void Broker::partition(int num_sets) {
-	assert(num_sets > 1);
-	pCmpY pCmpY;
-
-	unsigned long width = ceil(sqrt(num_sets));
-	if(width < 2) {width = 2;}
-
-	if(cfg->verbose) {
-		std::cout << "using " << num_sets << " partitions: " << width << "x" << width << " grid" << std::endl;
-	}
-
-	int num_per_stripe = 1 + ceil(num_pnts/width);
-
-	std::vector<Pnts> stripes;
-	Pnts ptmp;
-	for(int i = 0; i < num_pnts; ++i) {
-		ptmp.push_back(pnts[i]);
-		if((i%(num_per_stripe))+1 == num_per_stripe) {
-			stripes.push_back(ptmp);
-			ptmp.clear();
-		}
-	}
-
-
-	if(!ptmp.empty()) {
-		if(stripes.size() < width) {
-			stripes.push_back(ptmp);
-		} else {
-			auto& lastStripe = stripes.back();
-			for(auto p : ptmp) {
-				lastStripe.push_back(p);
-			}
-		}
-	}
-
-	for(auto& s : stripes) {
-		std::sort(s.begin(),s.end(), pCmpY);
-	}
-
-	ptmp.clear();
-	unsigned long cnt = 0, row = 0;
-	for(auto s : stripes) {
-		++row;
-		for(auto p : s) {
-			ptmp.push_back(p);
-			++cnt;
-			if( cnt == num_pnts/(width*width)) {
-				sets.push_back(Data(ptmp));
-				ptmp.clear();
-				cnt = 0;
-			}
-		}
-		if(!ptmp.empty()) {
-			if(sets.size() < row*width) {
-				sets.push_back(Data(ptmp));
-			} else {
-				auto& lastData = sets.back();
-				for(int i = 0 ; i < lastData.num_pnts; ++i) {
-					ptmp.push_back(lastData.pnts[i]);
-				}
-				sets.pop_back();
-				sets.push_back(Data(ptmp));
-			}
-			ptmp.clear();
-		}
-	}
-
-	for(auto &s : sets) {
-		s.resortPntsX();
-	}
-}
 
 void Broker::merge() {
-
+	/* only relevant if partition  != 0 */
 	collectZeroOnions();
 
 	auto holePnts = collectHolePnts();
@@ -92,61 +20,83 @@ void Broker::merge() {
 			auto t = tri.triangles[i];
 			faces.push_back(Face({t.a,t.b,t.c}));
 		}
+	}
 
+	if(cfg->recurse_holes) {
+		startHoleRecursion();
 	}
 }
 
+void Broker::startHoleRecursion() {
+	/* let us start by a BFS of a random triangle and select sqrt n tris */
+
+//	triQueue.erase(triQueue.begin()+(int)sqrt(tri.triangles.size()),triQueue.end());
+//	selectNumTrisBFS
+}
+
+
+TriQueue Broker::selectNumTrisBFS(long int triIdx, long int num) {
+	TriQueue tq;
+	auto& t = tri.triangles[triIdx];
+	return tq;
+}
 
 void Broker::mergeSomeTris() {
-	std::vector<unsigned long> triQueue;
-	for(unsigned long i=0; i < tri.triangles.size();++i) {triQueue.push_back(i);}
+	TriQueue triQueue(tri.triangles.size());
+	std::iota(triQueue.begin(),triQueue.end(),0);
 
+	/* set a fixed seed if one is provided */
+	if(cfg->seed != NIL) {
+		rng.seed(cfg->seed);
+	}
 
-	auto rng = std::default_random_engine {};
-	rng.seed(cfg->seed);
 
 	if(cfg->flip_tris != 0) {
-		std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
-		int flips = cfg->flip_tris;
-
-		if(cfg->flip_tris == -1) {
-			triQueue.erase(triQueue.begin()+(int)sqrt(tri.triangles.size()),triQueue.end());
-			flips = 1;
-		}
-
-		while(flips-- > 0) {
-
-			for(auto idx : triQueue) {
-				if(visitedTris.find(idx) == visitedTris.end()) {
-					auto& t = tri.triangles[idx];
-					std::vector<long> nV = {t.nAB,t.nBC,t.nCA};
-					std::shuffle(std::begin(nV), std::end(nV), rng);
-					for(auto n : nV) {
-						if(n != NIL && visitedTris.find(n) == visitedTris.end()) {
-							auto& tN = tri.triangles[n];
-							if(tri.isConvexQuad(t,tN)) {
-								tri.flipPair(t,tN);
-								visitedTris.insert(idx);
-								visitedTris.insert(n);
-							}
-						}
-					}
-
-				}
-			}
-			visitedTris.clear();
-		}
+		attemptFlipping(triQueue);
 	}
+
 	if(cfg->flip_tris == -1) {
 		triQueue.clear();
-		for(unsigned long i=0; i < tri.triangles.size();++i) {triQueue.push_back(i);}
+		std::iota(triQueue.begin(),triQueue.end(),0);
 	}
+
 	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
 
 	for(auto idx : triQueue) {
 		if(visitedTris.find(idx) == visitedTris.end()) {
 			attemptExpansion(idx);
 		}
+	}
+}
+
+void Broker::attemptFlipping(TriQueue &triQueue) {
+	auto flips = cfg->flip_tris;
+
+	if(cfg->flip_tris == -1) {
+		triQueue.erase(triQueue.begin()+(int)sqrt(tri.triangles.size()),triQueue.end());
+		flips = 1;
+	}
+
+	while(flips-- > 0) {
+		std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
+		for(auto idx : triQueue) {
+			if(visitedTris.find(idx) == visitedTris.end()) {
+				auto& t = tri.triangles[idx];
+				std::vector<long> nV = {t.nAB,t.nBC,t.nCA};
+				std::shuffle(std::begin(nV), std::end(nV), rng);
+				for(auto n : nV) {
+					if(n != NIL && visitedTris.find(n) == visitedTris.end()) {
+						auto& tN = tri.triangles[n];
+						if(tri.isConvexQuad(t,tN)) {
+							tri.flipPair(t,tN);
+							visitedTris.insert(idx);
+							visitedTris.insert(n);
+						}
+					}
+				}
+			}
+		}
+		visitedTris.clear();
 	}
 }
 
@@ -183,9 +133,12 @@ void Broker::attemptExpansion(int triIdx) {
 			&& visitedTris.find(cndIdx) == visitedTris.end()
 			&&     checked.find(cndIdx) == checked.end()
 		) {
-
 			/* check if we can add this tri and f stays convex */
 			if(addTriToFace(cndIdx,f)) {
+
+				/* remember that we used cndIdx in this face! */
+				triToFaceMap[cndIdx] = faces.size();
+				triToFaceMap[faces.size()] = cndIdx;
 
 				/* we can add it, then we should check its neighbours as well */
 				auto tCnd = tringles[cndIdx];
@@ -209,6 +162,8 @@ void Broker::attemptExpansion(int triIdx) {
 
 	if(f.size() > 3) {
 		visitedTris.insert(triIdx);
+		triToFaceMap[triIdx] = faces.size();
+		faceToTriMap[faces.size()] = triIdx;
 		faces.push_back(f);
 	}
 }
@@ -280,4 +235,76 @@ bool Broker::fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *pd) {
 	bool cw  = ( CW(pa,pb,pc) &&  CW(pb,pc,pd) &&  CW(pc,pd,pa) &&  CW(pd,pa,pb));
 	bool ccw = (CCW(pa,pb,pc) && CCW(pb,pc,pd) && CCW(pc,pd,pa) && CCW(pd,pa,pb));
 	return cw || ccw;
+}
+
+void Broker::partition(int num_sets) {
+	assert(num_sets > 1);
+	pCmpY pCmpY;
+
+	unsigned long width = ceil(sqrt(num_sets));
+	if(width < 2) {width = 2;}
+
+	if(cfg->verbose) {
+		std::cout << "using " << num_sets << " partitions: " << width << "x" << width << " grid" << std::endl;
+	}
+
+	int num_per_stripe = 1 + ceil(num_pnts/width);
+
+	std::vector<Pnts> stripes;
+	Pnts ptmp;
+	for(int i = 0; i < num_pnts; ++i) {
+		ptmp.push_back(pnts[i]);
+		if((i%(num_per_stripe))+1 == num_per_stripe) {
+			stripes.push_back(ptmp);
+			ptmp.clear();
+		}
+	}
+
+
+	if(!ptmp.empty()) {
+		if(stripes.size() < width) {
+			stripes.push_back(ptmp);
+		} else {
+			auto& lastStripe = stripes.back();
+			for(auto p : ptmp) {
+				lastStripe.push_back(p);
+			}
+		}
+	}
+
+	for(auto& s : stripes) {
+		std::sort(s.begin(),s.end(), pCmpY);
+	}
+
+	ptmp.clear();
+	unsigned long cnt = 0, row = 0;
+	for(auto s : stripes) {
+		++row;
+		for(auto p : s) {
+			ptmp.push_back(p);
+			++cnt;
+			if( cnt == num_pnts/(width*width)) {
+				sets.push_back(Data(ptmp));
+				ptmp.clear();
+				cnt = 0;
+			}
+		}
+		if(!ptmp.empty()) {
+			if(sets.size() < row*width) {
+				sets.push_back(Data(ptmp));
+			} else {
+				auto& lastData = sets.back();
+				for(int i = 0 ; i < lastData.num_pnts; ++i) {
+					ptmp.push_back(lastData.pnts[i]);
+				}
+				sets.pop_back();
+				sets.push_back(Data(ptmp));
+			}
+			ptmp.clear();
+		}
+	}
+
+	for(auto &s : sets) {
+		s.resortPntsX();
+	}
 }

@@ -1,0 +1,9 @@
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/CMakeFiles/rebuild_cache.dir
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/CMakeFiles/edit_cache.dir
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/triangle/CMakeFiles/edit_cache.dir
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/triangle/CMakeFiles/triangle.dir
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/triangle/CMakeFiles/rebuild_cache.dir
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/triangle/CMakeFiles/trianglelib.dir
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/src/CMakeFiles/rebuild_cache.dir
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/src/CMakeFiles/edit_cache.dir
+/localhome/gue/devel/2020-cgshop/mcd-apx/devbuild/src/CMakeFiles/mcd_apx.dir

@@ -44,6 +44,7 @@ static struct option long_options[] = {
 		{ "seed"   	    	, required_argument, 0, 's'},
 		{ "counter"   	    , required_argument, 0, 'c'},
 		{ "timeout"   	    , required_argument, 0, 'T'},
+		{ "recurse-holes"   , no_argument	   , 0, 'r'},
 		{ "flip-tris"  	    , required_argument, 0, 'f'},
 		{ "index"   	    , no_argument      , 0, 'I'},
 		{ "random"   	    , no_argument      , 0, 'R'},
@@ -60,17 +61,18 @@ usage(const char *progname, int err) {
 
 	fprintf(f,"Usage: %s [options] <input file> <output file>\n", progname);
 	fprintf(f,"  Options:\n");
-	fprintf(f,"           --obj     \t| --w \t\t\t write output in wavefront obj format\n");
-	fprintf(f,"           --onion   \t| --O \t\t\t use onion approach\n");
-	fprintf(f,"           --seed    \t| --s NUM\t\t define fixed seed for random approach\n");
-	fprintf(f,"           --counter \t| --c NUM\t\t set a counter (default: 1)\n");
-	fprintf(f,"           --timeout \t| --T NUM\t\t set a timeout\n");
-	fprintf(f,"           --index   \t| --I \t\t\t enable index\n");
-	fprintf(f,"           --random  \t| --R \t\t\t use randomized approach (default)\n");
-	fprintf(f,"           --verbose \t| --v \t\t\t print processing information\n");
-	fprintf(f,"           --flip-tris \t| --f NUM\t\t flip generated triangles, repeat flipping NUM times (uses same random seed) (0 no flipping, -1 flips sqrt(n) tris once\n");
-	fprintf(f,"           --timings \t| --t \t\t\t print timings [ms]\n");
-	fprintf(f,"           --partition \t| --p NUM\t\t partition into NUM sets and merge, (0 disables onion computation)\n");
+	fprintf(f,"           --obj     \t\t| --w \t\t\t write output in wavefront obj format\n");
+	fprintf(f,"           --onion   \t\t| --O \t\t\t use onion approach\n");
+	fprintf(f,"           --seed    \t\t| --s NUM\t\t define fixed seed for random approach\n");
+	fprintf(f,"           --counter \t\t| --c NUM\t\t set a counter (default: 1)\n");
+	fprintf(f,"           --timeout \t\t| --T NUM\t\t set a timeout\n");
+	fprintf(f,"           --recurse-holes   \t| --r \t\t\t enable 'hole punching' \n");
+	fprintf(f,"           --index   \t\t| --I \t\t\t enable index\n");
+	fprintf(f,"           --random  \t\t| --R \t\t\t use randomized approach (default)\n");
+	fprintf(f,"           --verbose \t\t| --v \t\t\t print processing information\n");
+	fprintf(f,"           --flip-tris \t\t| --f NUM\t\t flip generated triangles, repeat flipping NUM times (uses same random seed) (0 no flipping, -1 flips sqrt(n) tris once\n");
+	fprintf(f,"           --timings \t\t| --t \t\t\t print timings [ms]\n");
+	fprintf(f,"           --partition \t\t| --p NUM\t\t partition into NUM sets and merge, (0 disables onion computation)\n");
 	fprintf(f,"    For legacy reasons, instead of passing as arguments, input and output\n");
 	fprintf(f,"    files can also be specified using --input/--output.\n");
 	fprintf(f,"\n");
@@ -134,6 +136,10 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 		case 'R':
 			rt_opt->onion 		= false;
 			rt_opt->randomized  = true;
+			break;
+
+		case 'r':
+			rt_opt->recurse_holes = true;
 			break;
 
 		case 'v':

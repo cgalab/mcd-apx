@@ -14,6 +14,7 @@
 #define NIL       -1
 
 using boolean = bool;
+using TriQueue = std::vector<unsigned long>;
 
 class pnt {
 public:
@@ -58,6 +59,8 @@ public:
 
    int partition			= 1;
    int flip_tris			= 0;
+
+   boolean recurse_holes    = false;
 };
 
 class pCmpX {
