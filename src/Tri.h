@@ -138,6 +138,7 @@ public:
 		return hasCorner(tri,a) &&  hasCorner(tri,b) && hasCorner(tri,c);
 	}
 
+	int getNumTriangles() const {return tOUT.numberoftriangles;}
 
 	std::array<Edge,3> getTriangleEdges(int idx) const {
 		Triangle t = getTriangle(idx);
@@ -166,8 +167,8 @@ public:
 
 	void reflexSensitiveFlipping(Triangle tri, const int vertex);
 
-	void flipPair(Triangle& ta, Triangle& tb);
-	void flipPair(int a, int b) {flipPair(triangles[a],triangles[b]);}
+	void flipPair(Triangle ta, Triangle tb);
+	void flipPair(int a, int b) {flipPair(getTriangle(a),getTriangle(b));}
 
 	std::array<long,2> getCommonPair(const Triangle& ta, const Triangle& tb) const;
 
@@ -190,7 +191,7 @@ public:
 
 	void printTriangles() const;
 
-	Triangles triangles;
+//	Triangles triangles;
 
 private:
 	void filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, triangulateio& tri);

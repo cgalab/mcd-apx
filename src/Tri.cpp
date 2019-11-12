@@ -19,14 +19,14 @@ void Tri::runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onio
 	triangulate(triswitches,&triangleIN,&tOUT,&vorout);
 	triangulationDone = true;
 
-	for(int i = 0; i < tOUT.numberoftriangles; ++i) {
-		triangles.push_back(getTriangle(i));
-	}
+//	for(int i = 0; i < tOUT.numberoftriangles; ++i) {
+//		triangles.push_back(getTriangle(i));
+//	}
 }
 
 
 
-void Tri::flipPair(Triangle& ta, Triangle& tb) {
+void Tri::flipPair(Triangle ta, Triangle tb) {
 	auto cp = getCommonPair(ta,tb);
 	long taM = getMissingCorner(ta,cp[0],cp[1]);
 	long tbM = getMissingCorner(tb,cp[0],cp[1]);
@@ -85,6 +85,9 @@ std::array<long,2> Tri::getCommonPair(const Triangle& ta, const Triangle& tb) co
 	if(hasCorner(ta,tb.c)) {vect.push_back(tb.c);}
 	if(hasCorner(ta,tb.b)) {vect.push_back(tb.b);}
 	if(hasCorner(ta,tb.a)) {vect.push_back(tb.a);}
+	if(vect.size()!=2) {
+		std::cout << ta << std::endl << tb <<std::endl;
+	}
 	assert(vect.size() == 2);
 
 	auto Pv0 = P(vect[0]); auto Pv1 = P(vect[1]);
