@@ -39,7 +39,6 @@
 
 int main(int argc, char *argv[])
 {
-	Broker data;
 	rt_options rt_opt;
 	FILE *input = NULL, *output = NULL;
 
@@ -60,6 +59,7 @@ int main(int argc, char *argv[])
 		srand48(rt_opt.seed);
 	}
 
+	Broker data;
 	data.cfg = &rt_opt;
 
 	/*                                                                     */
