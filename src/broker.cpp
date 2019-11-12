@@ -9,9 +9,19 @@ void Broker::addTriAsFace(long int triIdx) {
 	auto t = tri.getTriangle(triIdx);
 	auto faceIdx = addFace(Face({t.a,t.b,t.c}));
 
+	auto it = triToFaceMap.find(triIdx);
+	if(it != triToFaceMap.end()) {
+		triToFaceMap.erase(it);
+	}
 	triToFaceMap.insert({{triIdx, faceIdx}});
+
+
 	std::list<long int> onlyi;
 	onlyi.push_back(triIdx);
+	auto it2 = faceToTriMap.find(faceIdx);
+	if(it2 != faceToTriMap.end()) {
+		faceToTriMap.erase(it2);
+	}
 	faceToTriMap.insert({{faceIdx, onlyi }});
 }
 
@@ -51,10 +61,9 @@ void Broker::startHoleRecursion() {
 		long numFaces = getNumFaces();
 		long numRemovedFaces = 0;
 
-		long retries = 2;
+		long retries = 1;
 
 		while(retries-- > 0) {
-
 			auto selectedTris = selectNumTrisBFS(triQueue.back(),(long int)sqrt(tri.getNumTriangles()));
 
 			/* let us find the faces that contain these triangles at the moment */
@@ -79,8 +88,8 @@ void Broker::startHoleRecursion() {
 //			attemptFlipping(allTrisVect,1,true);
 
 			visitedTris.clear();
-
 			std::shuffle(std::begin(allTrisVect), std::end(allTrisVect), rng);
+
 			for(auto idx : allTrisVect) {
 				if(visitedTris.find(idx) == visitedTris.end()) {
 					attemptExpansion(idx,allTris);
@@ -104,13 +113,13 @@ void Broker::startHoleRecursion() {
 				for(auto i : facesOfTris) {
 					faces[i] = backup[backupCnt++];
 				}
-				faces.resize(numFaces);
 			} else {
-				std::cout << "improve..." <<std::endl;
+				std::cout << "improve... " << numFacesNew <<std::endl;
 				backup.clear();
 				numFaces = numFacesNew;
 			}
-
+			faces.resize(numFaces);
+			visitedTris.clear();
 		}
 //		triQueue.pop_back();
 //	}
@@ -216,10 +225,10 @@ void Broker::attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet
 						auto tN = tri.getTriangle(n);
 						if(tri.isConvexQuad(t,tN)) {
 							tri.flipPair(t,tN);
-//							if(!inSet) {
+							if(!inSet) {
 								visitedTris.insert(idx);
 								visitedTris.insert(n);
-//							}
+							}
 							break;
 						}
 					}
@@ -251,7 +260,7 @@ void Broker::attemptExpansion(int triIdx, std::unordered_set<long int> allowedTr
 	/* we try to expand this face */
 	Face f = {t.a,t.b,t.c};
 
-	std::set<long int> checked;
+	std::set<long int>  checked;
 	std::list<long int> candidates = {t.nAB,t.nBC,t.nCA};
 	std::list<long int> trisInFace = {triIdx};
 
@@ -291,6 +300,11 @@ void Broker::attemptExpansion(int triIdx, std::unordered_set<long int> allowedTr
 	} while(!candidates.empty());
 
 	if(f.size() > 3) {
+		std::cout << "face: ";
+		for(auto i: f) {
+			std::cout << " " << i;
+		}
+		std::cout <<std::endl;
 		visitedTris.insert(triIdx);
 		auto fIdx = addFace(f);
 

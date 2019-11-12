@@ -46,7 +46,6 @@ public:
 	void printSets() const;
 
 	Sets  sets;
-	Faces faces; /* faces from the merge */
 
 	Cfg*  cfg = nullptr;
 	Tri tri;
@@ -62,6 +61,7 @@ public:
 	}
 
 private:
+	Faces faces; /* faces from the merge */
 	std::set<int> visitedTris;
 
 	std::unordered_map<long int, long int> triToFaceMap;
@@ -104,8 +104,8 @@ private:
 	std::unordered_set<long int> getFacesOfTriangles(TriQueue &tris);
 	TriQueue selectNumTrisBFS(long int triIdx, unsigned long int num);
 
-	inline FaceIterator cNext(Face& f, FaceIterator it) {return (++it == f.end()) ? f.begin() : it;}
-	inline FaceIterator cPrev(Face& f, FaceIterator it) {return (it == f.begin()) ? (std::prev(f.end())) : --it;}
+	inline FaceIterator cNext(Face& f, FaceIterator it) {return (std::next(it) == f.end()) ? f.begin() : std::next(it);}
+	inline FaceIterator cPrev(Face& f, FaceIterator it) {return (it == f.begin()) ? (std::prev(f.end())) : std::prev(it);}
 
 	void addTriAsFace(long int triIdx);
 	bool fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *d);
