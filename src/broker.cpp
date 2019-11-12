@@ -5,8 +5,18 @@
 #include <math.h>
 
 
+void Broker::addTriAsFace(long int triIdx) {
+	auto t = tri.getTriangle(triIdx);
+	auto faceIdx = addFace(Face({t.a,t.b,t.c}));
+
+	triToFaceMap.insert({{triIdx, faceIdx}});
+	std::list<long int> onlyi;
+	onlyi.push_back(triIdx);
+	faceToTriMap.insert({{faceIdx, onlyi }});
+}
+
 void Broker::merge() {
-	/* only relevant if partition  != 0 */
+	/* only relevant if partition != 0 */
 	collectZeroOnions();
 
 	auto holePnts = collectHolePnts();
@@ -15,15 +25,9 @@ void Broker::merge() {
 
 	mergeSomeTris();
 
-	for(unsigned long i = 0; i < tri.triangles.size(); ++i) {
+	for(int i = 0; i < tri.getNumTriangles(); ++i) {
 		if(visitedTris.find(i) == visitedTris.end()) {
-			auto t = tri.triangles[i];
-			faces.push_back(Face({t.a,t.b,t.c}));
-
-			triToFaceMap.insert({{i, faces.size()-1}});
-			std::list<long int> onlyi;
-			onlyi.push_back(i);
-			faceToTriMap.insert({{faces.size()-1, onlyi }});
+			addTriAsFace(i);
 		}
 	}
 
@@ -34,40 +38,80 @@ void Broker::merge() {
 
 void Broker::startHoleRecursion() {
 	/* let us start by a BFS of a random triangle and select sqrt n tris */
-	TriQueue triQueue(tri.triangles.size());
+	TriQueue triQueue(tri.getNumTriangles());
 	std::iota(triQueue.begin(),triQueue.end(),0);
 	std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
 	triQueue.resize((int)sqrt(triQueue.size()));
 
-	Faces backup;
-	long numRemovedFaces = 0;
 
 	std::cout << "TRI IDX: " << triQueue.back() << std::endl;
 
 //	while(!triQueue.empty()) {
-		auto selectedTris = selectNumTrisBFS(triQueue.back(),(long int)sqrt(tri.triangles.size()));
+		Faces backup;
+		long numFaces = getNumFaces();
+		long numRemovedFaces = 0;
 
-		/* let us find the faces that contain these triangles at the moment */
-		auto facesOfTris = getFacesOfTriangles(selectedTris);
+		long retries = 2;
 
-		/* let us obtain all triangles that form these faces */
-		auto allTris = getTrisOfFaces(facesOfTris);
+		while(retries-- > 0) {
 
-		/* let us backup and delete these faces */
-		numRemovedFaces = facesOfTris.size();
-		for(auto i : facesOfTris) {
-			faces[i] = {{}};
+			auto selectedTris = selectNumTrisBFS(triQueue.back(),(long int)sqrt(tri.getNumTriangles()));
+
+			/* let us find the faces that contain these triangles at the moment */
+			auto facesOfTris = getFacesOfTriangles(selectedTris);
+
+			/* let us obtain all triangles that form these faces */
+			auto allTris = getTrisOfFaces(facesOfTris);
+
+			/* let us backup and delete these faces */
+			numRemovedFaces = facesOfTris.size();
+			for(auto i : facesOfTris) {
+				backup.push_back(removeFace(i));
+			}
+
+			/* new we try to find a better solution for this tri-subset */
+			TriQueue allTrisVect;
+			visitedTris.clear();
+			for(auto t : allTris) {
+				visitedTris.insert(t);
+				allTrisVect.push_back(t);
+			}
+//			attemptFlipping(allTrisVect,1,true);
+
+			visitedTris.clear();
+
+			std::shuffle(std::begin(allTrisVect), std::end(allTrisVect), rng);
+			for(auto idx : allTrisVect) {
+				if(visitedTris.find(idx) == visitedTris.end()) {
+					attemptExpansion(idx,allTris);
+				}
+			}
+
+			for(auto idx : allTrisVect) {
+				if(visitedTris.find(idx) == visitedTris.end()) {
+					addTriAsFace(idx);
+				}
+			}
+
+			long numFacesNew = getNumFaces();
+
+			std::cout << "old: " << numFaces << ", removed: " << numRemovedFaces << ", new: " << numFacesNew << std::endl;
+
+			if(numFacesNew > numFaces) {
+				std::cout << "restore..." <<std::endl;
+				long backupCnt = 0;
+				/* we restore to the previous state */
+				for(auto i : facesOfTris) {
+					faces[i] = backup[backupCnt++];
+				}
+				faces.resize(numFaces);
+			} else {
+				std::cout << "improve..." <<std::endl;
+				backup.clear();
+				numFaces = numFacesNew;
+			}
+
 		}
-
-		/* new we try to find a better solution for this tri-subset */
-		TriQueue allTrisVect;
-		for(auto t : allTris) {
-			allTrisVect.push_back(t);
-		}
-		visitedTris.clear();
-		attemptFlipping(allTrisVect,1);
-
-
 //		triQueue.pop_back();
 //	}
 }
@@ -99,7 +143,7 @@ std::unordered_set<long int> Broker::getFacesOfTriangles(TriQueue &tris) {
 
 TriQueue Broker::selectNumTrisBFS(long int triIdx, unsigned long int num) {
 	TriQueue tq;
-	auto& t = tri.triangles[triIdx];
+	auto t = tri.getTriangle(triIdx);
 	std::set<long int> checked;
 
 	tq.push_back(triIdx);
@@ -107,7 +151,7 @@ TriQueue Broker::selectNumTrisBFS(long int triIdx, unsigned long int num) {
 	unsigned long it = 0;
 
 	while(it < num) {
-		t = tri.triangles[tq[it]];
+		t = tri.getTriangle(tq[it]);
 		for(auto n : {t.nAB,t.nBC,t.nCA}) {
 			if(n != NIL && checked.find(n) == checked.end()) {
 				tq.push_back(n);
@@ -121,7 +165,7 @@ TriQueue Broker::selectNumTrisBFS(long int triIdx, unsigned long int num) {
 }
 
 void Broker::mergeSomeTris() {
-	TriQueue triQueue(tri.triangles.size());
+	TriQueue triQueue(tri.getNumTriangles());
 	std::iota(triQueue.begin(),triQueue.end(),0);
 
 	/* set a fixed seed if one is provided */
@@ -134,7 +178,7 @@ void Broker::mergeSomeTris() {
 		auto flips = cfg->flip_tris;
 
 		if(cfg->flip_tris == -1) {
-			triQueue.resize((int)sqrt(tri.triangles.size()));
+			triQueue.resize((int)sqrt(tri.getNumTriangles()));
 			flips = 1;
 		}
 
@@ -155,27 +199,34 @@ void Broker::mergeSomeTris() {
 	}
 }
 
-void Broker::attemptFlipping(TriQueue &triQueue, unsigned long flips) {
+void Broker::attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet) {
 	while(flips-- > 0) {
 		std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
 		for(auto idx : triQueue) {
-			if(visitedTris.find(idx) == visitedTris.end()) {
-				auto& t = tri.triangles[idx];
+			if(inSet || visitedTris.find(idx) == visitedTris.end()) {
+				auto t = tri.getTriangle(idx);
 				std::vector<long> nV = {t.nAB,t.nBC,t.nCA};
 				std::shuffle(std::begin(nV), std::end(nV), rng);
 				for(auto n : nV) {
-					if(n != NIL && visitedTris.find(n) == visitedTris.end()) {
-						auto& tN = tri.triangles[n];
+					if(n != NIL &&
+							((!inSet && visitedTris.find(n) == visitedTris.end())
+							||
+							(inSet && visitedTris.find(n) != visitedTris.end()))
+					) {
+						auto tN = tri.getTriangle(n);
 						if(tri.isConvexQuad(t,tN)) {
 							tri.flipPair(t,tN);
-							visitedTris.insert(idx);
-							visitedTris.insert(n);
+//							if(!inSet) {
+								visitedTris.insert(idx);
+								visitedTris.insert(n);
+//							}
+							break;
 						}
 					}
 				}
 			}
 		}
-		visitedTris.clear();
+		if(!inSet) {visitedTris.clear();}
 	}
 }
 
@@ -194,9 +245,8 @@ void Broker::collectZeroOnions() {
 	}
 }
 
-void Broker::attemptExpansion(int triIdx) {
-	auto tringles = tri.triangles;
-	const Triangle t = tringles[triIdx];
+void Broker::attemptExpansion(int triIdx, std::unordered_set<long int> allowedTris) {
+	auto t = tri.getTriangle(triIdx);
 
 	/* we try to expand this face */
 	Face f = {t.a,t.b,t.c};
@@ -212,6 +262,7 @@ void Broker::attemptExpansion(int triIdx) {
 		if(cndIdx != NIL
 			&& visitedTris.find(cndIdx) == visitedTris.end()
 			&&     checked.find(cndIdx) == checked.end()
+			&& (allowedTris.empty() || allowedTris.find(cndIdx) != allowedTris.end())
 		) {
 			/* check if we can add this tri and f stays convex */
 			if(addTriToFace(cndIdx,f)) {
@@ -219,11 +270,12 @@ void Broker::attemptExpansion(int triIdx) {
 				trisInFace.push_back(cndIdx);
 
 				/* we can add it, then we should check its neighbours as well */
-				auto tCnd = tringles[cndIdx];
+				auto tCnd = tri.getTriangle(cndIdx);
 				for(auto tCndN : {tCnd.nAB,tCnd.nBC,tCnd.nCA}) {
 					if(tCndN != NIL
 						&& visitedTris.find(tCndN) == visitedTris.end()
-						&&     checked.find(tCndN) == checked.end())
+						&&     checked.find(tCndN) == checked.end()
+						&& (allowedTris.empty() || allowedTris.find(tCndN) != allowedTris.end()))
 					{
 						candidates.push_back(tCndN);
 					}
@@ -240,17 +292,25 @@ void Broker::attemptExpansion(int triIdx) {
 
 	if(f.size() > 3) {
 		visitedTris.insert(triIdx);
-		faces.push_back(f);
+		auto fIdx = addFace(f);
 
 		for(auto tidx : trisInFace) {
-			triToFaceMap.insert({{tidx, faces.size()-1}});
+			auto it = triToFaceMap.find(tidx);
+			if(it != triToFaceMap.end()) {
+				triToFaceMap.erase(it);
+			}
+			triToFaceMap.insert({{tidx, fIdx}});
 		}
-		faceToTriMap.insert({{faces.size()-1, trisInFace}});
+		auto it = faceToTriMap.find(fIdx);
+		if(it != faceToTriMap.end()) {
+			faceToTriMap.erase(it);
+		}
+		faceToTriMap.insert({{fIdx, trisInFace}});
 	}
 }
 
 bool Broker::addTriToFace(long int tidx, Face& f) {
-	auto t = tri.triangles[tidx];
+	auto t = tri.getTriangle(tidx);
 	/* finding the indices */
 	auto itB = f.begin();
 	while(itB != f.end() && !t.hasIndex(*itB)) {++itB;}
@@ -296,6 +356,7 @@ bool Broker::addTriToFace(long int tidx, Face& f) {
 void Broker::writeFacesToFile(FILE *output) const {
 	std::stringstream ss;
 	for(auto f : faces) {
+		if(f.size() < 2) {continue;}
 		ss << "f";
 		for(auto i : f) {ss << " " << i+1;}
 		ss << "\n";
