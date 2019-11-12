@@ -37,6 +37,47 @@
 #include "headers.h"
 
 
+void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
+	if (rt_opt.onion) {
+		/*                                                                  */
+		/* compute onion layers                                             */
+		/*                                                                  */
+		OnionLayers(data->pnts, data->num_pnts, data->layers, &data->num_layers, data->nodes);
+		/*                                                                  */
+		/* output layers                                                    */
+		/*                                                                  */
+
+		/*                                                                  */
+		/* compute lower bound                                              */
+		/*                                                                  */
+		data->lower_bound = DetermineLowerBound(data->pnts, data->num_pnts, data->layers, data->num_layers,
+				data->nodes);
+
+		if(rt_opt.partition > 1) {
+			data->backupOnionZero();
+		}
+
+		/*                                                                  */
+		/* compute approximate minimum decomposition (based on onions)      */
+		/*                                                                  */
+		ComputeApproxDecompOnion(data,output, data->pnts, data->num_pnts, data->layers, data->num_layers,
+				data->nodes, data->lower_bound, rt_opt.obj, rt_opt);
+	}
+
+	if(rt_opt.randomized) {
+		/*                                                                  */
+		/* compute approximate minimum decomposition (Knauer&Spillner)      */
+		/*                                                                  */
+		ComputeApproxDecomp(data, output, data->pnts, data->num_pnts, data->layers, data->nodes,
+				rt_opt.randomized, rt_opt.obj, rt_opt);
+	}
+
+	if(!rt_opt.randomized && !rt_opt.onion) {
+		printf("Error: no approach defined!\n");
+		exit(0);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	rt_options rt_opt;
@@ -118,7 +159,7 @@ int main(int argc, char *argv[])
 
 	/* print stats for wrapper */
 	int cvx_faces = 0;
-	cvx_faces += data.faces.size();
+	cvx_faces += data.getNumFaces();
 	for(auto& s : data.sets) {
 		cvx_faces += s.num_cvx_areas;
 	}
@@ -134,47 +175,6 @@ int main(int argc, char *argv[])
 	exit(0);
 }
 
-
-void StartComputation(Data *data, rt_options &rt_opt, FILE *output) {
-	if (rt_opt.onion) {
-		/*                                                                  */
-		/* compute onion layers                                             */
-		/*                                                                  */
-		OnionLayers(data->pnts, data->num_pnts, data->layers, &data->num_layers, data->nodes);
-		/*                                                                  */
-		/* output layers                                                    */
-		/*                                                                  */
-
-		/*                                                                  */
-		/* compute lower bound                                              */
-		/*                                                                  */
-		data->lower_bound = DetermineLowerBound(data->pnts, data->num_pnts, data->layers, data->num_layers,
-				data->nodes);
-
-		if(rt_opt.partition > 1) {
-			data->backupOnionZero();
-		}
-
-		/*                                                                  */
-		/* compute approximate minimum decomposition (based on onions)      */
-		/*                                                                  */
-		ComputeApproxDecompOnion(data,output, data->pnts, data->num_pnts, data->layers, data->num_layers,
-				data->nodes, data->lower_bound, rt_opt.obj, rt_opt);
-	}
-
-	if(rt_opt.randomized) {
-		/*                                                                  */
-		/* compute approximate minimum decomposition (Knauer&Spillner)      */
-		/*                                                                  */
-		ComputeApproxDecomp(data, output, data->pnts, data->num_pnts, data->layers, data->nodes,
-				rt_opt.randomized, rt_opt.obj, rt_opt);
-	}
-
-	if(!rt_opt.randomized && !rt_opt.onion) {
-		printf("Error: no approach defined!\n");
-		exit(0);
-	}
-}
 
 
 int p_comp(const void *a, const void *b)

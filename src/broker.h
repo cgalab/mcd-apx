@@ -20,17 +20,16 @@
 #include "data.h"
 #include "Tri.h"
 
-using Face  = std::vector<long>;
-using Faces = std::list<Face>;
+using Face  = std::list<long>;
+using Faces = std::vector<Face>;
 using FaceIterator = Face::iterator;
-using AFacesIterator = Faces::iterator;
 
 class Broker : public Data {
 	using Sets  = std::vector<Data>;
 	using Cfg   = rt_options;
 
 public:
-	Broker(int size = MAX):Data(size) {}
+	Broker(int size = 0):Data(size) {}
 
 	void partition(int num_sets = 1);
 	void merge();
@@ -46,21 +45,27 @@ public:
 	void writeFacesToFile(FILE *output) const;
 	void printSets() const;
 
-
 	Sets  sets;
 	Faces faces; /* faces from the merge */
 
 	Cfg*  cfg = nullptr;
-
-	bool fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *d);
-
 	Tri tri;
+
+	long getNumFaces() const {
+		long num = 0;
+		for(auto& f : faces) {
+			if(f.size() > 0) {
+				++num;
+			}
+		}
+		return num;
+	}
 
 private:
 	std::set<int> visitedTris;
 
-	std::unordered_map<long int, AFacesIterator> triToFaceMap;
-	std::unordered_map<AFacesIterator, std::list<long int>> faceToTriMap;
+	std::unordered_map<long int, long int> triToFaceMap;
+	std::unordered_map<long int, std::list<long int>> faceToTriMap;
 
 	std::default_random_engine rng = std::default_random_engine {};
 
@@ -71,14 +76,16 @@ private:
 
 	void attemptExpansion(int triIdx);
 
-	void attemptFlipping(TriQueue &triQueue);
+	void attemptFlipping(TriQueue &triQueue, unsigned long flips);
 
-	std::list<long int> getTrisOfFaces(std::unordered_set<AFacesIterator>& trifaces);
-	std::unordered_set<AFacesIterator> getFacesOfTriangles(TriQueue &tris);
-	TriQueue selectNumTrisBFS(long int triIdx, long int num);
+	std::unordered_set<long int> getTrisOfFaces(std::unordered_set<long int>& trifaces);
+	std::unordered_set<long int> getFacesOfTriangles(TriQueue &tris);
+	TriQueue selectNumTrisBFS(long int triIdx, unsigned long int num);
 
 	inline FaceIterator cNext(Face& f, FaceIterator it) {return (++it == f.end()) ? f.begin() : it;}
-	inline FaceIterator cPrev(Face& f, FaceIterator it) {return (it == f.begin()) ? (f.end()-1) : --it;}
+	inline FaceIterator cPrev(Face& f, FaceIterator it) {return (it == f.begin()) ? (std::prev(f.end())) : --it;}
+
+	bool fourConvexPoints(pnt *pa, pnt *pb, pnt *pc, pnt *d);
 };
 
 #endif
