@@ -1,2 +1,0 @@
-/usr/bin/ar qc libtrianglelib.a  CMakeFiles/trianglelib.dir/triangle.c.o
-/usr/bin/ranlib libtrianglelib.a
