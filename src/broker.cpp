@@ -79,11 +79,8 @@ void Broker::startHoleRecursion() {
 
 
 		while(!triQueue.empty()) {
-			Faces backup;
 			long numFaces = getNumFaces();
-			long numRemovedFaces = 0;
 
-			//		std::cout << "TRI IDX: " << triQueue.back() << std::endl;
 			long retries = 10;
 
 			Faces backup_faces; /* faces from the merge */
@@ -109,9 +106,8 @@ void Broker::startHoleRecursion() {
 				auto allTris = getTrisOfFaces(facesOfTris);
 
 				/* let us backup and delete these faces */
-				numRemovedFaces = facesOfTris.size();
 				for(auto i : facesOfTris) {
-					backup.push_back(removeFace(i));
+					removeFace(i);
 				}
 
 				/* new we try to find a better solution for this tri-subset */
@@ -122,6 +118,7 @@ void Broker::startHoleRecursion() {
 					allTrisVect.push_back(t);
 				}
 				if(!attemptFlipping(allTrisVect,1,true)) {
+					/* UPSi, we screwed up the triangulation somehow */
 					faces = backup_faces;
 					visitedTris = backup_visitedTris;
 					triToFaceMap = backup_triToFaceMap;
@@ -149,32 +146,19 @@ void Broker::startHoleRecursion() {
 
 				long numFacesNew = getNumFaces();
 
-				//			std::cout << "old: " << numFaces << ", removed: " << numRemovedFaces << ", new: " << numFacesNew << std::endl;
-
 				if(numFacesNew > numFaces) {
-					//				std::cout << "restore... (" << backup.size() << ") " <<std::endl;
 					faces = backup_faces;
 					visitedTris = backup_visitedTris;
 					triToFaceMap = backup_triToFaceMap;
 					faceToTriMap = backup_faceToTriMap;
 					freeFaceSpace = backup_freeFaceSpace;
 					tri.restore();
-					//				long backupCnt = 0;
-					//				/* we restore to the previous state */
-					//				for(auto i : facesOfTris) {
-					//					faces[i] = backup[backupCnt++];
-					//				}
-					//				for(long i = numFaces; i < numFacesNew; ++i) {
-					//					removeFace(i);
-					//					removeFaceReference(i);
-					//				}
 				} else {
 					if(numFacesNew < numFaces) {
 						std::cerr << numFacesNew << "/" << cfg->beat <<" (" << recurse << ") " << std::endl;
 					}
 					numFaces = numFacesNew;
 				}
-				backup.clear();
 				visitedTris.clear();
 			}
 
