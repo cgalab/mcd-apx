@@ -42,11 +42,11 @@ void Broker::merge() {
 	}
 
 	if(cfg->recurse_holes) {
-		std::cout << "hole-recursion (1000 tries (w. reset on success), 10 recursions (w. 10xsqrt(n) p.i.), 100 tries p. rec.)"  << std::endl;
+		std::cout << "hole-recursion (500 tries (w. reset on success), 10 recursions (w. 10xsqrt(n) p.i.), 100 tries p. rec.)"  << std::endl;
 
 		int printHRrun = 0;
 
-		int retries = 1000;
+		int retries = 500;
 		do{
 			int num_faces = getNumFaces();
 			do {
