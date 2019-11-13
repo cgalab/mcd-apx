@@ -9,6 +9,7 @@
 #include <iostream>
 #include <random>
 #include <set>
+#include <algorithm>
 
 #include <string.h>
 
@@ -72,6 +73,14 @@ public:
 			}
 		}
 		return NIL;
+	}
+
+	bool hasEqualCorners(const Triangle& t) const {
+		std::vector<long> c1 = {{a,b,c}};
+		std::vector<long> c2 = {{t.a,t.b,t.c}};
+		std::sort(c1.begin(),c1.end());
+		std::sort(c2.begin(),c2.end());
+		return c1[0] == c2[0] && c1[1] == c2[1] &&  c1[2] == c2[2];
 	}
 
 	bool hasIndex(long int i) const {return i == a || i == b || i == c;}

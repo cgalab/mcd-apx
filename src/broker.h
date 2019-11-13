@@ -100,7 +100,7 @@ private:
 
 	void attemptExpansion(int triIdx, std::unordered_set<long int> allowedTris = std::unordered_set<long int>(0));
 
-	void attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet = false);
+	bool attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet = false);
 
 	std::unordered_set<long int> getTrisOfFaces(std::unordered_set<long int>& trifaces);
 	std::unordered_set<long int> getFacesOfTriangles(TriQueue &tris);

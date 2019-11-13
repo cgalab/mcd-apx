@@ -42,7 +42,7 @@ void Broker::merge() {
 	}
 
 	if(cfg->recurse_holes) {
-		std::cout << "hole-recursion (10 tries, 10 recursions (w. 10xsqrt(n) p.i.), 100 retries)"  << std::endl;
+		std::cout << "hole-recursion (1000 tries (w. reset on success), 10 recursions (w. 10xsqrt(n) p.i.), 100 tries p. rec.)"  << std::endl;
 
 		int printHRrun = 0;
 
@@ -51,7 +51,9 @@ void Broker::merge() {
 			int num_faces = getNumFaces();
 			do {
 				std::cerr << "HR(" << printHRrun++ << ") ";
+
 				startHoleRecursion();
+
 			} while(cfg->beat <= getNumFaces() || cfg->beat == NIL);
 			int new_num_faces = getNumFaces();
 			if(num_faces>new_num_faces) {
@@ -73,7 +75,7 @@ void Broker::startHoleRecursion() {
 
 		std::iota(triQueue.begin(),triQueue.end(),0);
 		std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
-		triQueue.resize(10*(int)sqrt(triQueue.size()));
+		triQueue.resize(std::max(50,10*(int)sqrt(triQueue.size())));
 
 
 		while(!triQueue.empty()) {
@@ -119,7 +121,15 @@ void Broker::startHoleRecursion() {
 					visitedTris.insert(t);
 					allTrisVect.push_back(t);
 				}
-				attemptFlipping(allTrisVect,1,true);
+				if(!attemptFlipping(allTrisVect,1,true)) {
+					faces = backup_faces;
+					visitedTris = backup_visitedTris;
+					triToFaceMap = backup_triToFaceMap;
+					faceToTriMap = backup_faceToTriMap;
+					freeFaceSpace = backup_freeFaceSpace;
+					tri.restore();
+					break;
+				}
 
 				visitedTris.clear();
 				std::shuffle(std::begin(allTrisVect), std::end(allTrisVect), rng);
@@ -160,7 +170,7 @@ void Broker::startHoleRecursion() {
 					//				}
 				} else {
 					if(numFacesNew < numFaces) {
-						std::cerr << numFacesNew << " (" << recurse << ") ";
+						std::cerr << numFacesNew << " (" << recurse << ") " << std::endl;
 					}
 					numFaces = numFacesNew;
 				}
@@ -272,14 +282,14 @@ void Broker::mergeSomeTris() {
 	}
 }
 
-void Broker::attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet) {
+bool Broker::attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet) {
 	while(flips-- > 0) {
 		std::shuffle(std::begin(triQueue), std::end(triQueue), rng);
 		for(auto idx : triQueue) {
 			if(inSet || visitedTris.find(idx) == visitedTris.end()) {
 				auto t = tri.getTriangle(idx);
-				std::vector<long> nV = {t.nAB,t.nBC,t.nCA};
-				std::shuffle(std::begin(nV), std::end(nV), rng);
+				std::set<long> nV = {t.nAB,t.nBC,t.nCA};
+//				std::shuffle(std::begin(nV), std::end(nV), rng);
 				for(auto n : nV) {
 					if(n != NIL &&
 							((!inSet && visitedTris.find(n) == visitedTris.end())
@@ -287,6 +297,9 @@ void Broker::attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet
 							(inSet && visitedTris.find(n) != visitedTris.end()))
 					) {
 						auto tN = tri.getTriangle(n);
+						if(t.hasEqualCorners(tN) || tri.getCommonPair(t,tN)[0] == NIL) {
+							return false;
+						}
 						if(tri.isConvexQuad(t,tN)) {
 							tri.flipPair(t,tN);
 							if(!inSet) {
@@ -301,6 +314,7 @@ void Broker::attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet
 		}
 		if(!inSet) {visitedTris.clear();}
 	}
+	return true;
 }
 
 Pnts Broker::collectHolePnts() {

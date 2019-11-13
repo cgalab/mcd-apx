@@ -86,9 +86,13 @@ std::array<long,2> Tri::getCommonPair(const Triangle& ta, const Triangle& tb) co
 	if(hasCorner(ta,tb.b)) {vect.push_back(tb.b);}
 	if(hasCorner(ta,tb.a)) {vect.push_back(tb.a);}
 	if(vect.size()!=2) {
+		return {{NIL, NIL}};
 		std::cout << ta << std::endl << tb <<std::endl;
 	}
 	assert(vect.size() == 2);
+
+
+	/* CHECKAGAIN! THIS HAS PROBLEMS! */
 
 	auto Pv0 = P(vect[0]); auto Pv1 = P(vect[1]);
 	auto Pv2 = P(getMissingCorner(ta,vect[0],vect[1]));

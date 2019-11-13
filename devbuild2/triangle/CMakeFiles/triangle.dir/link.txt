@@ -1,0 +1,1 @@
+/usr/lib/ccache/cc   -rdynamic CMakeFiles/triangle.dir/triangle.c.o  -o triangle -lm 
