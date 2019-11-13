@@ -1,6 +1,6 @@
 devbuil*
 buildpart
-build
+build*
 .cproject
 .settings
 .project
