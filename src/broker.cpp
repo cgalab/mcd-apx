@@ -170,7 +170,7 @@ void Broker::startHoleRecursion() {
 					//				}
 				} else {
 					if(numFacesNew < numFaces) {
-						std::cerr << numFacesNew << " (" << recurse << ") " << std::endl;
+						std::cerr << numFacesNew << "/" << cfg->beat <<" (" << recurse << ") " << std::endl;
 					}
 					numFaces = numFacesNew;
 				}
