@@ -42,11 +42,11 @@ void Broker::merge() {
 	}
 
 	if(cfg->recurse_holes) {
-		std::cout << "hole-recursion (500 tries (w. reset on success), 10 recursions (w. 10xsqrt(n) p.i.), 100 tries p. rec.)"  << std::endl;
+		std::cout << "hole-recursion (100 tries (w. reset on success), 10 recursions (w. 10xsqrt(n) p.i.), 10 tries p. rec.)"  << std::endl;
 
 		int printHRrun = 0;
 
-		int retries = 500;
+		int retries = 100;
 		do{
 			int num_faces = getNumFaces();
 			do {
@@ -58,7 +58,7 @@ void Broker::merge() {
 			int new_num_faces = getNumFaces();
 			if(num_faces>new_num_faces) {
 				num_faces =  new_num_faces;
-				retries = 1000;
+				retries = 100;
 				std::cerr << "better sol. found, reset " << std::endl;
 			}
 		} while(retries-- > 0);
@@ -84,7 +84,7 @@ void Broker::startHoleRecursion() {
 			long numRemovedFaces = 0;
 
 			//		std::cout << "TRI IDX: " << triQueue.back() << std::endl;
-			long retries = 100;
+			long retries = 10;
 
 			Faces backup_faces; /* faces from the merge */
 			std::set<int> backup_visitedTris;
