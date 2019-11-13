@@ -67,9 +67,9 @@ private:
 	std::unordered_map<long int, long int> triToFaceMap;
 	std::unordered_map<long int, std::list<long int>> faceToTriMap;
 
-	std::default_random_engine rng = std::default_random_engine {};
-
 	std::list<long> freeFaceSpace;
+
+	std::default_random_engine rng = std::default_random_engine {};
 
 	Onions allZeroOnions;
 
@@ -90,13 +90,15 @@ private:
 	inline Face removeFace(long idx) {
 		freeFaceSpace.push_back(idx);
 		auto f = faces[idx];
-		faces[idx] = {{}};
+		faces[idx].clear();
 		return f;
 	}
 
+	void removeFaceReference(long faceIdx);
+	void removeTriReference(long triIdx);
 
 
-	void attemptExpansion(int triIdx, std::unordered_set<long int> allowedTris = {{}});
+	void attemptExpansion(int triIdx, std::unordered_set<long int> allowedTris = std::unordered_set<long int>(0));
 
 	void attemptFlipping(TriQueue &triQueue, unsigned long flips, bool inSet = false);
 

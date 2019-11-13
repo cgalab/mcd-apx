@@ -193,12 +193,18 @@ public:
 
 //	Triangles triangles;
 
+	void backup();
+	void restore();
+
 private:
 	void filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, triangulateio& tri);
 	void inittriangulateioOut(int num_pnts, const Onions& onions, triangulateio& tri);
 
 	triangulateio triangleIN, tOUT, vorout;
 	rt_options* rt_opt = nullptr;
+
+	triangulateio backup_tOUT;
+	bool first_backup = true;
 
 	char *triswitches;
 	bool triangulationDone = false;

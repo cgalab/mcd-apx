@@ -49,6 +49,7 @@ static struct option long_options[] = {
 		{ "index"   	    , no_argument      , 0, 'I'},
 		{ "random"   	    , no_argument      , 0, 'R'},
 		{ "verbose" 	    , no_argument      , 0, 'v'},
+		{ "to-beat"	 	    , required_argument, 0, 'b'},
 		{ "timings"     	, no_argument      , 0, 't'},
 		{ "partition"     	, required_argument, 0, 'p'},
 		{ 0, 0, 0, 0}
@@ -67,6 +68,7 @@ usage(const char *progname, int err) {
 	fprintf(f,"           --counter \t\t| --c NUM\t\t set a counter (default: 1)\n");
 	fprintf(f,"           --timeout \t\t| --T NUM\t\t set a timeout\n");
 	fprintf(f,"           --recurse-holes   \t| --r \t\t\t enable 'hole punching' \n");
+	fprintf(f,"           --to-beat   \t\t| --b NUM\t\t be lower than NUM faces\n");
 	fprintf(f,"           --index   \t\t| --I \t\t\t enable index\n");
 	fprintf(f,"           --random  \t\t| --R \t\t\t use randomized approach (default)\n");
 	fprintf(f,"           --verbose \t\t| --v \t\t\t print processing information\n");
@@ -106,6 +108,10 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 
 		case 'w':
 			rt_opt->obj = true;
+			break;
+
+		case 'b':
+			rt_opt->beat = atoi(optarg);
 			break;
 
 		case 'f':

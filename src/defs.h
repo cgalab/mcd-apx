@@ -59,6 +59,7 @@ public:
 
    int partition			= 1;
    int flip_tris			= 0;
+   long beat				= NIL;
 
    boolean recurse_holes    = false;
 };

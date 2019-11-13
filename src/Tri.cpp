@@ -206,4 +206,23 @@ void Tri::printTriangles() const {
 }
 
 
+void Tri::backup() {
+	auto num_pnts = tOUT.numberofpoints;
+	auto num_tris = tOUT.numberoftriangles;
+	if(first_backup) {
+		Onions onions;
+		inittriangulateioOut(num_pnts,onions,backup_tOUT);
+		backup_tOUT.trianglelist = new int[num_tris*3];
+		backup_tOUT.neighborlist = new int[num_tris*3];
+		first_backup = false;
+	}
+	std::copy(&tOUT.trianglelist[0], &tOUT.trianglelist[0] +(3*num_tris) , &backup_tOUT.trianglelist[0]);
+	std::copy(&tOUT.neighborlist[0], &tOUT.neighborlist[0] +(3*num_tris) , &backup_tOUT.neighborlist[0]);
+}
+
+void Tri::restore() {
+	auto num_tris = tOUT.numberoftriangles;
+	std::copy(&backup_tOUT.trianglelist[0], &backup_tOUT.trianglelist[0] +(3*num_tris) , &tOUT.trianglelist[0]);
+	std::copy(&backup_tOUT.neighborlist[0], &backup_tOUT.neighborlist[0] +(3*num_tris) , &tOUT.neighborlist[0]);
+}
 
