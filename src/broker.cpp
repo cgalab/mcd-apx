@@ -542,6 +542,7 @@ void Broker::findSegments() {
 //		xadd.first->push_back(i);
 //		yadd.first->push_back(i);
 //	}
+	std::cout << "-- ortho not implemented yet!" << std::endl;
 }
 
 
