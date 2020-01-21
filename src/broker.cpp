@@ -1,5 +1,6 @@
 #include "broker.h"
 
+#include <map>
 #include <set>
 #include <algorithm>    // std::for_each, std::sort
 #include <math.h>
@@ -31,7 +32,12 @@ void Broker::merge() {
 
 	auto holePnts = collectHolePnts();
 
-	tri.runTriangle(pnts,num_pnts,holePnts,allZeroOnions);
+	Segments segments;
+	if(cfg->ortho) {
+		findSegments();
+	}
+
+	tri.runTriangle(pnts,num_pnts,holePnts,allZeroOnions,segments);
 
 	mergeSomeTris();
 
@@ -515,3 +521,27 @@ void Broker::partition(int num_sets) {
 		s.resortPntsX();
 	}
 }
+
+
+void Broker::findSegments() {
+	/*due to the new instance for the contest we assume x-/y-values*/
+//	std::map<double,std::list<int>> x_pnts;
+//	std::map<double,std::list<int>> y_pnts;
+//	for(int i = 0; i < num_pnts; ++i) {
+//		const pnt& p = pnts[i];
+//		auto xadd = x_pnts.insert({p.x,{i}});
+//		auto yadd = y_pnts.insert({p.y,{i}});
+//		if(!xadd.second) {
+//			const auto& list = xadd.first;
+//			list.push_back(i);
+//		}
+//		if(!yadd.second) {
+//			const auto& list = yadd.first;
+//			list.push_back(i);
+//		}
+//		xadd.first->push_back(i);
+//		yadd.first->push_back(i);
+//	}
+}
+
+

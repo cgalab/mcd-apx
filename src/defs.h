@@ -39,6 +39,8 @@ typedef struct {
    int prev;              /* next CW node           */ 
 } node;
 
+using Segment = std::vector<unsigned long>;
+using Segments = std::vector<Segment>;
 
 class rt_options {
 public:
@@ -52,6 +54,7 @@ public:
    boolean randomized		= true;
    boolean onion			= false;
    boolean obj				= false;
+   boolean ortho			= false;
 
    boolean timings			= false;
 

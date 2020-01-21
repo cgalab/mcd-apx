@@ -10,18 +10,14 @@ bool operator==(const Triangle& a, const Triangle& b) {return a.id == b.id;}
 bool operator!=(const Triangle& a, const Triangle& b) {return a.id != b.id;}
 
 
-void Tri::runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions) {
+void Tri::runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, const Segments& segments) {
 	/* init/fill the triangle structure with data */
-	filltriangulateioIn( pnts,num_pnts,holePnts,onions,triangleIN);
+	filltriangulateioIn( pnts,num_pnts,holePnts,onions,segments,triangleIN);
 	inittriangulateioOut(     num_pnts,onions,tOUT 	    );
 
 	/* triangulate */
 	triangulate(triswitches,&triangleIN,&tOUT,&vorout);
 	triangulationDone = true;
-
-//	for(int i = 0; i < tOUT.numberoftriangles; ++i) {
-//		triangles.push_back(getTriangle(i));
-//	}
 }
 
 
@@ -129,7 +125,7 @@ Triangle Tri::getNextCWTriangleAroundVertex(const Triangle& tri, long vertex) co
 	return Triangle();
 }
 
-void Tri::filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, triangulateio& tri) {
+void Tri::filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, const Segments& segments, triangulateio& tri) {
 	tri.numberofpoints	= num_pnts;
 	tri.pointlist    	= new double[tri.numberofpoints * 2];
 	tri.pointmarkerlist = new int[tri.numberofpoints];

@@ -118,7 +118,7 @@ public:
 
 	~Tri() {delete triswitches; }
 
-	void runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions);
+	void runTriangle(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, const Segments& segments);
 
 	void resetForSortedFlipping();
 
@@ -206,7 +206,7 @@ public:
 	void restore();
 
 private:
-	void filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, triangulateio& tri);
+	void filltriangulateioIn(pnt* pnts, int num_pnts, Pnts holePnts, const Onions& onions, const Segments& segments, triangulateio& tri);
 	void inittriangulateioOut(int num_pnts, const Onions& onions, triangulateio& tri);
 
 	triangulateio triangleIN, tOUT, vorout;

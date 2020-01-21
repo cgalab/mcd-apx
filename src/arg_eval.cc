@@ -51,6 +51,7 @@ static struct option long_options[] = {
 		{ "verbose" 	    , no_argument      , 0, 'v'},
 		{ "to-beat"	 	    , required_argument, 0, 'b'},
 		{ "timings"     	, no_argument      , 0, 't'},
+		{ "ortho"        	, no_argument      , 0, '0'},
 		{ "partition"     	, required_argument, 0, 'p'},
 		{ 0, 0, 0, 0}
 };
@@ -70,6 +71,7 @@ usage(const char *progname, int err) {
 	fprintf(f,"           --recurse-holes   \t| --r \t\t\t enable 'hole punching' \n");
 	fprintf(f,"           --to-beat   \t\t| --b NUM\t\t be lower than NUM faces\n");
 	fprintf(f,"           --index   \t\t| --I \t\t\t enable index\n");
+	fprintf(f,"           --ortho   \t\t| --0 \t\t\t ortho pnts\n");
 	fprintf(f,"           --random  \t\t| --R \t\t\t use randomized approach (default)\n");
 	fprintf(f,"           --verbose \t\t| --v \t\t\t print processing information\n");
 	fprintf(f,"           --flip-tris \t\t| --f NUM\t\t flip generated triangles, repeat flipping NUM times (uses same random seed) (0 no flipping, -1 flips sqrt(n) tris once\n");
@@ -112,6 +114,10 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 
 		case 'b':
 			rt_opt->beat = atoi(optarg);
+			break;
+
+		case '0':
+			rt_opt->ortho = true;
 			break;
 
 		case 'f':

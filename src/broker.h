@@ -96,7 +96,7 @@ private:
 
 	void removeFaceReference(long faceIdx);
 	void removeTriReference(long triIdx);
-
+	void findSegments();
 
 	void attemptExpansion(int triIdx, std::unordered_set<long int> allowedTris = std::unordered_set<long int>(0));
 
