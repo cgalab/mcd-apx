@@ -32,6 +32,35 @@
 /*                                                                           */
 #include "defs.h"
 #include "headers.h"
+#include "gitversion.h"
+
+/* timing stuff */
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <errno.h>
+
+static double get_current_rtime(void) {
+  struct rusage usage;
+  if (getrusage(RUSAGE_SELF, &usage) < 0) {
+    fprintf(stderr, "getrusage() failed: %s\n", strerror(errno));
+    exit(1);
+  }
+  return usage.ru_utime.tv_sec + (double)usage.ru_utime.tv_usec/1e6;
+}
+
+/* we are too fast for sane use of getrusage.  Also try a wallclock timer */
+#include <chrono>
+typedef std::chrono::high_resolution_clock Clock;
+
+static long get_maxrss(void) {
+  struct rusage usage;
+  if (getrusage(RUSAGE_SELF, &usage) < 0) {
+    fprintf(stderr, "getrusage() failed: %s\n", strerror(errno));
+    exit(1);
+  }
+  return usage.ru_maxrss;
+}
+
 
 
 int main(int argc, char *argv[])
@@ -97,6 +126,8 @@ int main(int argc, char *argv[])
          WriteObjVertices(output, pnts, num_pnts);
       }
 
+      double start_rtime = get_current_rtime();
+      auto start_hirestime = Clock::now();
       /*                                                                     */
       /* sort points in lexicographical order (first x, second y)            */
       /*                                                                     */
@@ -142,7 +173,29 @@ int main(int argc, char *argv[])
          /*                                                                  */
          ComputeApproxDecomp(output, pnts, num_pnts, layers, nodes,
                              rt_opt.randomized, rt_opt.obj);
+      } else {
+         fprintf(stderr, "Invalid operation mode.\n");
+         exit(1);
       }
+      double end_rtime = get_current_rtime();
+      auto end_hirestime = Clock::now();
+      long rmem = get_maxrss();
+      if (rt_opt.status_fd >= 0) {
+         FILE *status = fdopen(rt_opt.status_fd, "a");
+         if (!status) {
+            fprintf(stderr, "Cannot open status FD %d: %s\n", rt_opt.status_fd, strerror(errno));
+            exit(-1);
+         }
+
+         fprintf(status, "[STATUS] VERSION: %s\n", GITVERSION);
+         fprintf(status, "[STATUS] GENERATOR: mcd-apx-%s\n", rt_opt.onion ? "onion" : (rt_opt.randomized ? "random" : "unknown"));
+         fprintf(status, "[STATUS] INPUT_SIZE: %d\n", num_pnts);
+         fprintf(status, "[STATUS] CPUTIME: %.6lf\n", end_rtime - start_rtime);
+         fprintf(status, "[STATUS] WALLTIME: %.9lf\n",
+           double(std::chrono::duration_cast<std::chrono::nanoseconds>(end_hirestime - start_hirestime).count())/1e9);
+         fprintf(status, "[STATUS] MAXRSS: %ld\n", rmem);
+      }
+
       fclose(output);
    }
    catch (errordef PolyAreaErrorCode) {
