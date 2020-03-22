@@ -48,6 +48,7 @@ static struct option long_options[] = {
 		{ "random"   	    , no_argument      , 0, 'R'},
 		{ "verbose" 	    , no_argument      , 0, 'v'},
 		{ "timings"     	, no_argument      , 0, 't'},
+		{ "status-fd"       , required_argument , 0, '9'},
 		{ 0, 0, 0, 0}
 };
 
@@ -67,6 +68,8 @@ usage(const char *progname, int err) {
 	fprintf(f,"           --random  \t| --R \t\t\t use randomized approach (default)\n");
 	fprintf(f,"           --verbose \t| --v \t\t\t print processing information\n");
 	fprintf(f,"           --timings \t| --t \t\t\t print timings [ms]\n");
+	fprintf(f,"           --status-fd <FD>:   File-Descriptor number to print statistics to.\n");
+	fprintf(f,"                               (Try 1 or 2 if you do not know what else to use.)\n\n");
 	fprintf(f,"    For legacy reasons, instead of passing as arguments, input and output\n");
 	fprintf(f,"    files can also be specified using --input/--output.\n");
 	fprintf(f,"\n");
@@ -92,7 +95,7 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 
 	while (1) {
 		int option_index = 0;
-		int r = getopt_long(argc, argv, "hO:R:", long_options, &option_index);
+		int r = getopt_long(argc, argv, "hO:R:9:", long_options, &option_index);
 
 		if (r == -1) break;
 		switch (r) {
@@ -147,6 +150,11 @@ void ArgEval(int argc, char *argv[], rt_options *rt_opt)
 			rt_opt->timings = true;
 			std::cout << "not implemented." << std::endl;
 			break;
+
+		case '9':
+			rt_opt->status_fd = atoi(optarg);
+			break;
+
 
 		default:
 			std::cerr << "Invalid option " << (char)r << std::endl;

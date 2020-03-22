@@ -50,6 +50,8 @@ public:
    boolean obj				= false;
 
    boolean timings			= false;
+
+   int status_fd			= -1;
 };
 
 
